@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="css/style.css">
     
     <script>
         tailwind.config = {
@@ -70,10 +70,10 @@
     </header>
 
     <!-- Main Workspace -->
-    <div class="flex flex-1 overflow-hidden z-10 relative">
+    <div class="flex flex-col sm:flex-row flex-1 overflow-hidden z-10 relative">
         
         <!-- Sidebar containing inputs -->
-        <aside class="w-[420px] bg-white/40 backdrop-blur-2xl border-r border-glassborder flex flex-col h-full overflow-y-auto custom-scrollbar shadow-xl relative">
+        <aside class="w-full sm:w-[420px] bg-white/40 backdrop-blur-2xl border-r border-glassborder flex flex-col h-full overflow-y-auto custom-scrollbar shadow-xl relative">
             <div class="p-8 space-y-8">
                 
                 <!-- Subjects Section -->
@@ -151,7 +151,7 @@
 </aside>
 
         <!-- Dynamic Output -->
-        <main class="flex-1 overflow-x-hidden overflow-y-auto bg-transparent relative custom-scrollbar flex flex-col pb-8">
+        <main class="flex-1 overflow-x-auto overflow-y-auto bg-transparent relative custom-scrollbar flex flex-col pb-8">
             
             <!-- Error Banner -->
             <div id="errorBanner" class="hidden absolute top-6 left-1/2 transform -translate-x-1/2 bg-rose-100/90 backdrop-blur-md border border-rose-200 text-rose-700 px-8 py-3.5 rounded-full z-50 shadow-lg flex items-center max-w-xl w-full fade-in">
@@ -170,10 +170,10 @@
             </div>
 
             <!-- Calendar Container -->
-            <div id="exportArea" class="p-8 lg:p-12 flex-1 w-full min-w-[800px] flex flex-col items-center">
+            <div id="exportArea" class="p-4 md:p-8 lg:p-12 flex-1 w-full flex flex-col items-center overflow-x-auto">
                 <h2 class="text-3xl font-bold text-darkblue mb-8 tracking-tight text-center">Studilux Reading Timetable</h2>
 <p class="text-[0.7rem] text-slate-500 font-bold mb-6 uppercase tracking-wider flex items-center"><i class="fa-solid fa-circle-info text-brand-500 mr-2 text-[0.8rem]"></i> Tip: Click any grid cell to toggle it as <span class="text-slate-800 underline decoration-slate-400 mx-1">Blocked (Busy Window)</span>, or drag study blocks to reschedule.</p>
-                <div class="bg-white/40 backdrop-blur-3xl rounded-3xl shadow-xl border border-glassborder flex overflow-hidden transition-all duration-500 w-full" style="height: max(500px, calc(var(--num-hours, 24) * 85px));" id="calendarContainer">
+                <div class="bg-white/40 backdrop-blur-3xl rounded-3xl shadow-xl border border-glassborder flex overflow-hidden transition-all duration-500 w-full" style="height: max(300px, calc(var(--num-hours, 24) * 60px));" id="calendarContainer">
                     
                     <!-- Time Line -->
                     <div class="w-20 border-r border-glassborder flex flex-col bg-white/60" id="timeColumn">
