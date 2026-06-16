@@ -1,0 +1,88 @@
+/* Custom scrollbar for bright mode */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(30, 58, 138, 0.1);
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(30, 58, 138, 0.2);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.fade-in {
+    animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Calendar Grid specific styling */
+.time-slot {
+    height: calc(100% / var(--num-hours, 24));
+    border-bottom: 1px solid rgba(30, 58, 138, 0.05); /* very subtle blue lines */
+    box-sizing: border-box;
+    position: relative;
+}
+
+.day-column {
+    position: relative;
+    border-right: 1px solid rgba(30, 58, 138, 0.06);
+    /* Subtle vertical grid dots pattern */
+    background-image: radial-gradient(rgba(30, 58, 138, 0.04) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+.day-column:last-child {
+    border-right: none;
+}
+
+/* Glowing Glassmorphism Blocks */
+.schedule-block {
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    box-shadow: 0 4px 15px -3px rgba(30, 58, 138, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 10;
+}
+.schedule-block:hover {
+    transform: scale(1.02) translateY(-2px);
+    z-index: 20;
+    box-shadow: 0 12px 25px -5px rgba(30, 58, 138, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* Sky/DarkBlue/Ash Theme Colors for Difficulty Blocks */
+/* Diff 1 - Soft Sky */
+.diff-1 { background-color: rgba(56, 189, 248, 0.4); border: 1px solid rgba(56, 189, 248, 0.5); border-left: 4px solid #38bdf8; color: #0c4a6e; } 
+/* Diff 2 - Bright Blue */
+.diff-2 { background-color: rgba(14, 165, 233, 0.4); border: 1px solid rgba(14, 165, 233, 0.5); border-left: 4px solid #0ea5e9; color: #0c4a6e; } 
+/* Diff 3 - Deep Blue */
+.diff-3 { background-color: rgba(2, 132, 199, 0.4); border: 1px solid rgba(2, 132, 199, 0.5); border-left: 4px solid #0284c7; color: #f0f9ff; } 
+/* Diff 4 - Dark Blue */
+.diff-4 { background-color: rgba(30, 58, 138, 0.4); border: 1px solid rgba(30, 58, 138, 0.5); border-left: 4px solid #1e3a8a; color: #f0f9ff; } 
+/* Diff 5 - Red */
+.diff-5 { background-color: rgba(239, 68, 68, 0.3); border: 1px solid rgba(239, 68, 68, 0.4); border-left: 4px solid #ef4444; color: #ef4444; } 
+
+/* Stripes/dashed border for blocked slots */
+.blocked-slot {
+    background-color: rgba(148, 163, 184, 0.2) !important;
+    background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(148, 163, 184, 0.08) 10px, rgba(148, 163, 184, 0.08) 20px) !important;
+    border: 1px dashed rgba(148, 163, 184, 0.3) !important;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+.blocked-slot:hover {
+    background-color: rgba(148, 163, 184, 0.3) !important;
+}
+

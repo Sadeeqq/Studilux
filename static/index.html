@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studilux: AI Timetable Generator</title>
+    <!-- High-Fidelity Rendering Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="/static/css/style.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            400: '#38bdf8', /* sky */
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                        },
+                        darkblue: '#1e3a8a',
+                        ash: '#f0f4f8',
+                        glass: 'rgba(255, 255, 255, 0.4)',
+                        glassborder: 'rgba(255, 255, 255, 0.6)',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-ash text-darkblue h-screen overflow-hidden flex flex-col font-sans relative antialiased selection:bg-brand-500 selection:text-white">
+    
+    <!-- Ambient Background Gradients -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-brand-400/30 blur-[120px]"></div>
+        <div class="absolute top-[60%] -right-[10%] w-[40%] h-[60%] rounded-full bg-darkblue/10 blur-[120px]"></div>
+    </div>
+
+    <!-- Navbar -->
+    <header class="bg-white/60 backdrop-blur-xl border-b border-glassborder z-20 relative">
+        <div class="px-8 py-5 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <div class="bg-gradient-to-br from-brand-400 to-darkblue text-white p-2.5 rounded-xl shadow-lg shadow-brand-500/20">
+                    <i class="fa-solid fa-graduation-cap text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight text-darkblue">Studilux</h1>
+                    <p class="text-xs text-brand-500 font-bold tracking-wide uppercase">StudyBuddy+</p>
+                </div>
+            </div>
+            <div class="flex space-x-3">
+                <button id="exportPdfBtn" class="bg-white/40 hover:bg-white/60 border border-glassborder text-darkblue px-5 py-2.5 rounded-full font-bold shadow-sm transition-all duration-300 backdrop-blur-md hover:-translate-y-1 group">
+                    <i class="fa-solid fa-file-pdf text-rose-500 mr-2"></i> Export PDF
+                </button>
+                <button id="generateBtn" class="bg-white/60 hover:bg-white/80 border border-white/80 text-darkblue px-7 py-2.5 rounded-full font-bold shadow-sm transition-all duration-300 backdrop-blur-md hover:scale-105 hover:shadow-brand-500/20 flex items-center group">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-2 text-brand-500 group-hover:animate-spin"></i> Generate Timetable
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="flex flex-1 overflow-hidden z-10 relative">
+        
+        <!-- Sidebar containing inputs -->
+        <aside class="w-[420px] bg-white/40 backdrop-blur-2xl border-r border-glassborder flex flex-col h-full overflow-y-auto custom-scrollbar shadow-xl relative">
+            <div class="p-8 space-y-8">
+                
+                <!-- Subjects Section -->
+                <div>
+                    <h2 class="text-sm font-bold uppercase tracking-widest text-slate-500 mb-5 flex items-center"><i class="fa-solid fa-book-open text-brand-500 w-6"></i> Subjects</h2>
+                    <div id="subjectsList" class="space-y-3 mb-5">
+                        <!-- Subjects injected here -->
+                    </div>
+                    <form id="subjectForm" class="bg-white/50 backdrop-blur-md p-6 rounded-2xl border border-glassborder shadow-sm">
+                        <div class="space-y-4">
+                            <div>
+                                <input type="text" id="subjName" placeholder="e.g. Quantum Physics" class="w-full bg-white/70 text-sm text-darkblue border-glassborder rounded-xl shadow-sm focus:border-brand-400 focus:ring-1 focus:ring-brand-400 p-3.5 border placeholder-slate-400 transition outline-none" required>
+                            </div>
+                            <div class="flex space-x-4">
+                                <div class="w-1/2">
+                                    <label class="text-xs text-slate-500 font-bold block mb-1.5 ml-1">Difficulty (1-5)</label>
+                                    <input type="number" id="subjDiff" min="1" max="5" value="3" class="w-full bg-white/70 text-sm text-darkblue border-glassborder rounded-xl shadow-sm focus:border-brand-400 focus:ring-1 focus:ring-brand-400 p-3.5 border transition outline-none" required>
+                                </div>
+                                <div class="w-1/2">
+                                    <label class="text-xs text-slate-500 font-bold block mb-1.5 ml-1">Hours Needed</label>
+                                    <input type="number" id="subjHours" min="1" max="20" value="2" class="w-full bg-white/70 text-sm text-darkblue border-glassborder rounded-xl shadow-sm focus:border-brand-400 focus:ring-1 focus:ring-brand-400 p-3.5 border transition outline-none" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full mt-3 bg-gradient-to-r from-brand-500 to-darkblue text-white hover:from-brand-400 hover:to-brand-600 py-3.5 rounded-xl text-sm font-bold shadow-md transition-all hover:shadow-brand-500/30 active:scale-95">
+                                Add Subject
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="h-px bg-glassborder w-full"></div>
+
+                <!-- Free Study Time Daily Section -->
+                <div>
+                    <h2 class="text-sm font-bold uppercase tracking-widest text-slate-500 mb-5 flex items-center"><i class="fa-solid fa-clock text-brand-500 w-6"></i> Free Study Time</h2>
+                    <form id="freeTimeForm" class="bg-white/50 backdrop-blur-md p-6 rounded-2xl border border-glassborder shadow-sm">
+                        <div class="space-y-3">
+                            <div class="flex space-x-4">
+                                <div class="w-1/2">
+                                    <label class="text-xs text-slate-500 font-bold block mb-1.5 ml-1">Start (0-23)</label>
+                                    <input type="number" id="freeStart" min="0" max="23" value="16" class="w-full bg-white/70 text-sm text-darkblue border-glassborder rounded-xl shadow-sm focus:border-brand-400 focus:ring-1 focus:ring-brand-400 p-3.5 border transition outline-none" required>
+                                </div>
+                                <div class="w-1/2">
+                                    <label class="text-xs text-slate-500 font-bold block mb-1.5 ml-1">End (1-24)</label>
+                                    <input type="number" id="freeEnd" min="1" max="24" value="20" class="w-full bg-white/70 text-sm text-darkblue border-glassborder rounded-xl shadow-sm focus:border-brand-400 focus:ring-1 focus:ring-brand-400 p-3.5 border transition outline-none" required>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="h-px bg-glassborder w-full"></div>
+<h2 class="text-sm font-bold uppercase tracking-widest text-slate-500 mb-5 flex items-center"><i class="fa-solid fa-bolt text-brand-500 w-6"></i> Peak Energy Hours</h2>
+<div id="peakHoursContainer" class="flex flex-wrap gap-1"></div>
+<p class="text-[0.5rem] text-slate-500 font-bold mb-6 uppercase tracking-wider flex items-center"><i class="fa-solid fa-circle-info text-brand-500 mr-2 text-[0.4rem]"></i> Tip: Click the hour buttons to mark your high‑energy slots.</p>
+
+                <!-- Allowed Days Section -->
+                <div>
+                    <h2 class="text-sm font-bold uppercase tracking-widest text-slate-500 mb-5 flex items-center"><i class="fa-solid fa-calendar-day text-brand-500 w-6"></i> Study Days</h2>
+                    <form id="studyDaysForm" class="bg-white/50 backdrop-blur-md p-6 rounded-2xl border border-glassborder shadow-sm">
+                        <div class="grid grid-cols-2 gap-4 text-sm text-slate-600 font-bold" id="daysCheckboxes">
+                            <label class="flex items-center space-x-3 cursor-pointer group"><input type="checkbox" value="Monday" checked class="w-4 h-4 rounded border-slate-300 bg-none text-brand-500 focus:ring-brand-500 focus:ring-offset-ash transition accent-brand-500"><span class="group-hover:text-darkblue transition">Monday</span></label>
+                            <label class="flex items-center space-x-3 cursor-pointer group"><input type="checkbox" value="Tuesday" checked class="w-4 h-4 rounded border-slate-300 bg-none text-brand-500 focus:ring-brand-500 focus:ring-offset-ash transition accent-brand-500"><span class="group-hover:text-darkblue transition">Tuesday</span></label>
+                            <label class="flex items-center space-x-3 cursor-pointer group"><input type="checkbox" value="Wednesday" checked class="w-4 h-4 rounded border-slate-300 bg-none text-brand-500 focus:ring-brand-500 focus:ring-offset-ash transition accent-brand-500"><span class="group-hover:text-darkblue transition">Wednesday</span></label>
+                            <label class="flex items-center space-x-3 cursor-pointer group"><input type="checkbox" value="Thursday" checked class="w-4 h-4 rounded border-slate-300 bg-none text-brand-500 focus:ring-brand-500 focus:ring-offset-ash transition accent-brand-500"><span class="group-hover:text-darkblue transition">Thursday</span></label>
+                            <label class="flex items-center space-x-3 cursor-pointer group"><input type="checkbox" value="Friday" checked class="w-4 h-4 rounded border-slate-300 bg-none text-brand-500 focus:ring-brand-500 focus:ring-offset-ash transition accent-brand-500"><span class="group-hover:text-darkblue transition">Friday</span></label>
+                            <label class="flex items-center space-x-3 cursor-pointer group"><input type="checkbox" value="Saturday" class="w-4 h-4 rounded border-slate-300 bg-none text-brand-500 focus:ring-brand-500 focus:ring-offset-ash transition accent-brand-500"><span class="group-hover:text-darkblue transition">Saturday</span></label>
+                            <label class="flex items-center space-x-3 cursor-pointer group"><input type="checkbox" value="Sunday" class="w-4 h-4 rounded border-slate-300 bg-none text-brand-500 focus:ring-brand-500 focus:ring-offset-ash transition accent-brand-500"><span class="group-hover:text-darkblue transition">Sunday</span></label>
+                        </div>
+                    </form>
+                </div>
+                
+            </div>
+        
+</aside>
+
+        <!-- Dynamic Output -->
+        <main class="flex-1 overflow-x-hidden overflow-y-auto bg-transparent relative custom-scrollbar flex flex-col pb-8">
+            
+            <!-- Error Banner -->
+            <div id="errorBanner" class="hidden absolute top-6 left-1/2 transform -translate-x-1/2 bg-rose-100/90 backdrop-blur-md border border-rose-200 text-rose-700 px-8 py-3.5 rounded-full z-50 shadow-lg flex items-center max-w-xl w-full fade-in">
+                <i class="fa-solid fa-circle-exclamation mr-4 text-xl text-rose-500"></i>
+                <span id="errorMsg" class="font-bold text-sm tracking-wide"></span>
+            </div>
+
+            <!-- Loading overlay -->
+            <div id="loadingOverlay" class="hidden absolute inset-0 bg-white/60 backdrop-blur-xl z-40 flex flex-col justify-center items-center">
+                <div class="relative">
+                    <div class="w-24 h-24 border-4 border-darkblue/10 rounded-full"></div>
+                    <div class="w-24 h-24 border-4 border-transparent border-t-brand-500 border-r-darkblue rounded-full animate-spin absolute top-0 left-0"></div>
+                </div>
+                <p class="mt-8 font-bold text-xl text-darkblue tracking-widest animate-pulse">Running Constraint Solver</p>
+                <p class="mt-2 text-xs text-brand-500 uppercase tracking-[0.3em]">Optimizing Matrix Engine</p>
+            </div>
+
+            <!-- Calendar Container -->
+            <div id="exportArea" class="p-8 lg:p-12 flex-1 w-full min-w-[800px] flex flex-col items-center">
+                <h2 class="text-3xl font-bold text-darkblue mb-8 tracking-tight text-center">Studilux Reading Timetable</h2>
+<p class="text-[0.7rem] text-slate-500 font-bold mb-6 uppercase tracking-wider flex items-center"><i class="fa-solid fa-circle-info text-brand-500 mr-2 text-[0.8rem]"></i> Tip: Click any grid cell to toggle it as <span class="text-slate-800 underline decoration-slate-400 mx-1">Blocked (Busy Window)</span>, or drag study blocks to reschedule.</p>
+                <div class="bg-white/40 backdrop-blur-3xl rounded-3xl shadow-xl border border-glassborder flex overflow-hidden transition-all duration-500 w-full" style="height: max(500px, calc(var(--num-hours, 24) * 85px));" id="calendarContainer">
+                    
+                    <!-- Time Line -->
+                    <div class="w-20 border-r border-glassborder flex flex-col bg-white/60" id="timeColumn">
+                        <!-- Filled by JS -->
+                    </div>
+
+                    <!-- Days Container -->
+                    <div class="flex-1 flex" id="daysContainer">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/app.js?v=2"></script>
+</body>
+</html>
