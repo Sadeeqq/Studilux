@@ -343,7 +343,7 @@ generateBtn.addEventListener('click', async () => {
 
         const activePeakHours = Array.from(peakHours).filter(h => h >= start && h < end);
 
-        const response = await fetch('https://localhost:5000/api/generate_schedule', {
+        const response = await fetch('https://personal-timetable.onrender.com/api/generate_schedule', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
