@@ -1,4 +1,3 @@
-const functions = require('firebase-functions')
 const express = require('express');
 const cors = require('cors');
 const { solveTimetable } = require('./solver');
@@ -18,4 +17,8 @@ app.post('/api/generate_schedule', (req, res) => {
   const result = solveTimetable(subjects, free_time, allowed_days, blocked_slots, peak_hours);
   res.json(result);
 });
-exports.api = functions.https.onRequest(app);
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
+});
