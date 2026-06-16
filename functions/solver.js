@@ -86,17 +86,6 @@ function solveTimetable(subjects, free_time, allowed_days = null, blocked_slots 
   const minDaily = Math.floor(avgLoad);
   const maxDaily = Math.ceil(avgLoad);
 
-  // ---- 8. Multi‑pass backtracking ------------------------------------------
-  const passes = [
-    { prioritize: true,  balance: 0, diff: true,  spread: true },
-    { prioritize: true,  balance: 1, diff: true,  spread: true },
-    { prioritize: false, balance: 0, diff: true,  spread: true },
-    { prioritize: false, balance: 1, diff: true,  spread: true },
-    { prioritize: false, balance: 2, diff: true,  spread: true },
-    { prioritize: false, balance: 2, diff: false, spread: true },
-    { prioritize: false, balance: 2, diff: false, spread: false }
-  ];
-
   // Helper: generate all daily load distributions for a given balance level
   function generateDistributions(dayIdx, curLoads, remaining, results, balanceLevel) {
     if (dayIdx === allowedDayIndices.length) {
@@ -124,8 +113,33 @@ function solveTimetable(subjects, free_time, allowed_days = null, blocked_slots 
     }
   }
 
+  // ---- 8. Multi‑pass backtracking ------------------------------------------
+  const MIN_SPACE_RATIO = 0.30; // 30 % of a day's possible slots qualifies as "lots of space"
+  // Passes now include variations of prioritize, balance, diff, spread, and hardestPeak
+  const passes = [
+    // Strict load, enforce peak priority, difficulty separation, spread, and hardest‑subject‑on‑peak ordering
+    { prioritize: true,  balance: 0, diff: true,  spread: true,  hardestPeak: true },
+    // Relaxed load balance, keep other constraints
+    { prioritize: true,  balance: 1, diff: true,  spread: true,  hardestPeak: true },
+    // No peak priority, keep difficulty separation and spread
+    { prioritize: false, balance: 0, diff: true,  spread: true,  hardestPeak: true },
+    // No peak priority, relax load balance
+    { prioritize: false, balance: 1, diff: true,  spread: true,  hardestPeak: true },
+    // Fully relaxed load, drop difficulty separation
+    { prioritize: false, balance: 2, diff: false, spread: true,  hardestPeak: true },
+    // Fully relaxed, drop spread as well
+    { prioritize: false, balance: 2, diff: false, spread: false, hardestPeak: true }
+  ];
+
   // Core solver for a single pass configuration
-  function solvePass({ prioritize, balance, diff, spread }) {
+  function solvePass({ prioritize, balance, diff, spread, hardestPeak }) {
+    // Determine days with lots of free slots
+    const bigDays = new Set();
+    allowedDayIndices.forEach(dIdx => {
+      const total = dayCapacities[dIdx];
+      if (total >= Math.ceil(MIN_SPACE_RATIO * maxHoursPerDay)) bigDays.add(dIdx);
+    });
+
     const distributions = [];
     generateDistributions(0, [], totalHoursRequired, distributions, balance);
     if (!distributions.length) return null;
@@ -152,7 +166,18 @@ function solveTimetable(subjects, free_time, allowed_days = null, blocked_slots 
         const [day, hour] = activeSlots[idx];
         const isPeak = slotIsPeak[idx];
 
-        for (const name of Object.keys(subjectsMap)) {
+        // Build ordering: hardest diff‑5 on peak first
+        const nameOrder = Object.keys(subjectsMap).sort((a, b) => {
+          const da = subjectsMap[a].difficulty;
+          const db = subjectsMap[b].difficulty;
+          if (isPeak && hardestPeak) {
+            if (da === 5 && db !== 5) return -1;
+            if (db === 5 && da !== 5) return 1;
+          }
+          return 0;
+        });
+
+        for (const name of nameOrder) {
           if (remainingHours[name] <= 0) continue;
 
           // Spread constraint
@@ -208,6 +233,14 @@ function solveTimetable(subjects, free_time, allowed_days = null, blocked_slots 
       }
 
       if (backtrack(0)) {
+        // Ensure every "big" day has at least one subject
+        let bigOk = true;
+        for (const dIdx of bigDays) {
+          const total = Object.values(daySubjectCounts[dIdx] ?? {}).reduce((a, b) => a + b, 0);
+          if (total === 0) { bigOk = false; break; }
+        }
+        if (!bigOk) continue; // try next distribution
+
         const schedule = {};
         DAYS_MAP.forEach(d => (schedule[d] = []));
         activeSlots.forEach(([dIdx, hr], i) => {
