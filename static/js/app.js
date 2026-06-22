@@ -253,125 +253,324 @@ subjectForm.addEventListener('submit', (e) => {
     }
 });
 
-exportPdfBtn.addEventListener('click', () => {
+// ══════════════════════════════════════════════════════════════════════════════
+// EXPORT SYSTEM — three independent methods, user picks via modal
+//
+//  Option A: Screenshot → PDF  (html-to-image + jsPDF)
+//            Captures the exact on-screen look. Works on desktop and Android.
+//            On iOS, opens as a blob URL in a new tab for the user to save.
+//
+//  Option B: Programmatic PDF  (jsPDF drawing API, reads lastScheduleData)
+//            Draws the timetable as clean vector shapes — no canvas, no CORS
+//            taint risk, works on every browser and device reliably.
+//
+//  Option C: Print / Save as PDF  (window.print())
+//            Uses the browser's native print dialog. On mobile this opens the
+//            system share sheet; the user saves as PDF from there.
+//            Zero dependencies, always works, no async download issues.
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── Export modal open/close ───────────────────────────────────────────────────
+function openExportModal() {
     if (!lastScheduleData) {
         showError("Generate a timetable first before exporting!");
         return;
     }
+    document.getElementById('exportModal').classList.remove('hidden');
+    document.getElementById('exportModal').classList.add('flex');
+}
+function closeExportModal() {
+    document.getElementById('exportModal').classList.add('hidden');
+    document.getElementById('exportModal').classList.remove('flex');
+}
+
+exportPdfBtn.addEventListener('click', openExportModal);
+
+document.getElementById('exportModalClose').addEventListener('click', closeExportModal);
+document.getElementById('exportModal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('exportModal')) closeExportModal();
+});
+
+// ── Helper: restore calendarContainer styles (used by Option A) ───────────────
+function restoreContainerStyle(container, saved) {
+    container.style.height     = saved.height;
+    container.style.width      = saved.width;
+    container.style.overflowX  = saved.overflowX;
+    container.style.overflowY  = saved.overflowY;
+    container.style.transition = saved.transition;
+}
+
+// ── Helper: mobile-safe PDF download ─────────────────────────────────────────
+function savePdf(pdf, filename) {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    if (isIOS) {
+        const blob    = pdf.output('blob');
+        const blobUrl = URL.createObjectURL(blob);
+        window.open(blobUrl, '_blank');
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+    } else {
+        pdf.save(filename);
+    }
+}
+
+// ── Option A: Screenshot → PDF ────────────────────────────────────────────────
+// Captures the live DOM as a PNG then embeds it in a landscape A4 PDF.
+// All five issues from the audit are fixed here:
+//   1. Container transition disabled before measuring so scrollWidth is accurate
+//   2. Both calendarContainer AND exportArea overflow expanded before capture
+//   3. pixelRatio capped at devicePixelRatio (max 2 on mobile) to avoid GPU limit
+//   4. tempImg.onerror handler added so the button never gets stuck disabled
+//   5. iOS uses blob URL instead of pdf.save() to stay in the gesture chain
+document.getElementById('exportOptionA').addEventListener('click', () => {
+    closeExportModal();
 
     const originalContent = exportPdfBtn.innerHTML;
     exportPdfBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Capturing...';
-    exportPdfBtn.disabled = true;
+    exportPdfBtn.disabled  = true;
 
-    // ── FIX 1: Temporarily expand the calendar container so html-to-image
-    // captures the FULL timetable width, not just the visible scroll viewport.
-    //
-    // On mobile, #calendarContainer has overflow-x:auto and a capped height,
-    // so html-to-image only sees the scrolled-into-view portion — meaning
-    // day columns scrolled off to the right are simply missing from the PNG.
-    //
-    // Solution: before capture, record the original inline styles, then force
-    // the container to its full scroll dimensions (scrollWidth × scrollHeight).
-    // After capture, restore everything exactly as it was.
-    const container   = calendarContainer;
-    const savedStyle  = {
-        height:    container.style.height,
-        width:     container.style.width,
-        overflowX: container.style.overflowX,
-        overflowY: container.style.overflowY,
+    const container = calendarContainer;
+    const outer     = exportArea;
+
+    // Save current inline styles for both elements
+    const savedContainer = {
+        height:     container.style.height,
+        width:      container.style.width,
+        overflowX:  container.style.overflowX,
+        overflowY:  container.style.overflowY,
+        transition: container.style.transition,
+    };
+    const savedOuter = {
+        overflowX: outer.style.overflowX,
+        overflowY: outer.style.overflowY,
     };
 
-    // Full content dimensions — scrollWidth/scrollHeight include off-screen content
-    const fullW = container.scrollWidth;
-    const fullH = container.scrollHeight;
+    // FIX: disable transition before measuring so scrollWidth is not mid-animation
+    container.style.transition = 'none';
 
-    container.style.width     = fullW + 'px';
-    container.style.height    = fullH + 'px';
+    // FIX: expand both the inner calendar and the outer wrapper so nothing is clipped
+    container.style.width     = container.scrollWidth  + 'px';
+    container.style.height    = container.scrollHeight + 'px';
     container.style.overflowX = 'visible';
     container.style.overflowY = 'visible';
+    outer.style.overflowX     = 'visible';
+    outer.style.overflowY     = 'visible';
 
-    // ── FIX 2: Use devicePixelRatio instead of a hard-coded 4.
-    // pixelRatio:4 on a phone that already has a 3× display produces a canvas
-    // 4× the DOM size on top of the 3× physical pixels — unnecessary memory,
-    // slow capture, and sometimes causes the canvas to exceed the browser's
-    // maximum texture size (16384px on many mobile GPUs), resulting in a blank
-    // or corrupted image. Capping at 2 on mobile is sharp and reliable.
     const pixelRatio = isMobile() ? Math.min(window.devicePixelRatio || 2, 2) : 3;
 
-    const options = {
-        quality: 1.0,
-        pixelRatio,
-        backgroundColor: '#f0f4f8',
-        // Do not pass a style transform — it confuses the cloning step on mobile
-    };
-
-    // Small settle delay so the DOM reflow completes before capture starts
+    // 80ms settle so the reflow completes before the canvas snapshot is taken
     setTimeout(() => {
-        htmlToImage.toPng(exportArea, options)
-            .then(function (dataUrl) {
-                // ── Restore container to its mobile scroll state immediately ──
-                container.style.height    = savedStyle.height;
-                container.style.width     = savedStyle.width;
-                container.style.overflowX = savedStyle.overflowX;
-                container.style.overflowY = savedStyle.overflowY;
+        htmlToImage.toPng(outer, {
+            quality: 1.0,
+            pixelRatio,
+            backgroundColor: '#f0f4f8',
+            // fetchRequestInit helps with CORS on fonts/icons in some browsers
+            fetchRequestInit: { mode: 'cors', cache: 'force-cache' },
+        })
+        .then(dataUrl => {
+            // Restore immediately after capture, before building the PDF
+            restoreContainerStyle(container, savedContainer);
+            outer.style.overflowX = savedOuter.overflowX;
+            outer.style.overflowY = savedOuter.overflowY;
 
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('l', 'mm', 'a4');
+            const { jsPDF } = window.jspdf;
+            const pdf        = new jsPDF('l', 'mm', 'a4');
+            const pageWidth  = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            const margin     = 10;
+            const targetW    = pageWidth - margin * 2;
 
-                const pageWidth  = pdf.internal.pageSize.getWidth();
-                const pageHeight = pdf.internal.pageSize.getHeight();
-                const margin = 10;
-                const targetWidth  = pageWidth  - (margin * 2);
-
-                // Derive image dimensions directly from the dataUrl without
-                // creating an Image element — avoids the extra async hop that
-                // breaks the trusted-gesture chain on iOS Safari.
-                const tempImg = new Image();
-                tempImg.onload = function () {
-                    const imgRatio    = this.height / this.width;
-                    const targetHeight = targetWidth * imgRatio;
-                    const yPos = Math.max(margin, (pageHeight - targetHeight) / 2);
-
-                    pdf.addImage(dataUrl, 'PNG', margin, yPos, targetWidth, targetHeight, undefined, 'FAST');
-
-                    // ── FIX 3: Mobile-safe download.
-                    // pdf.save() uses a hidden <a download> click, which works on
-                    // Android Chrome but is silently blocked on iOS Safari when
-                    // called inside an async chain (the browser no longer considers
-                    // it a direct user gesture by this point).
-                    //
-                    // Fix: on iOS we open the PDF as a blob URL in a new tab,
-                    // which Safari always allows and which the user can then save
-                    // via the share sheet. On all other browsers, pdf.save() works.
-                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-                    if (isIOS) {
-                        const blob    = pdf.output('blob');
-                        const blobUrl = URL.createObjectURL(blob);
-                        window.open(blobUrl, '_blank');
-                        // Revoke after a short delay so the new tab has time to load it
-                        setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
-                    } else {
-                        pdf.save("Studilux_Timetable.pdf");
-                    }
-
-                    exportPdfBtn.innerHTML = originalContent;
-                    exportPdfBtn.disabled  = false;
-                };
-                tempImg.src = dataUrl;
-            })
-            .catch(function (error) {
-                // Restore container on failure too
-                container.style.height    = savedStyle.height;
-                container.style.width     = savedStyle.width;
-                container.style.overflowX = savedStyle.overflowX;
-                container.style.overflowY = savedStyle.overflowY;
-
-                console.error('Export error:', error);
-                showError("Export failed. Please try again.");
+            const tempImg   = new Image();
+            // FIX: onerror so button is never permanently stuck if image fails
+            tempImg.onerror = () => {
+                showError("Capture failed — try Option B or Option C instead.");
                 exportPdfBtn.innerHTML = originalContent;
                 exportPdfBtn.disabled  = false;
-            });
-    }, 80); // 80ms is enough for one reflow cycle on all mobile browsers
+            };
+            tempImg.onload = function () {
+                const ratio   = this.height / this.width;
+                const targetH = targetW * ratio;
+                const yPos    = Math.max(margin, (pageHeight - targetH) / 2);
+                pdf.addImage(dataUrl, 'PNG', margin, yPos, targetW, targetH, undefined, 'FAST');
+                savePdf(pdf, 'Studilux_Timetable.pdf');
+                exportPdfBtn.innerHTML = originalContent;
+                exportPdfBtn.disabled  = false;
+            };
+            tempImg.src = dataUrl;
+        })
+        .catch(err => {
+            restoreContainerStyle(container, savedContainer);
+            outer.style.overflowX = savedOuter.overflowX;
+            outer.style.overflowY = savedOuter.overflowY;
+            console.error('Option A export error:', err);
+            showError("Screenshot capture failed. Try Option B or Option C.");
+            exportPdfBtn.innerHTML = originalContent;
+            exportPdfBtn.disabled  = false;
+        });
+    }, 80);
+});
+
+// ── Option B: Programmatic PDF ────────────────────────────────────────────────
+// Reads lastScheduleData and subjects directly — no DOM screenshot, no canvas,
+// no CORS taint risk. Draws a clean timetable grid using jsPDF's drawing API.
+// Works on every browser and device without any async download issues.
+document.getElementById('exportOptionB').addEventListener('click', () => {
+    closeExportModal();
+
+    if (!lastScheduleData || !subjects.length) {
+        showError("No timetable data to export.");
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const pdf        = new jsPDF('l', 'mm', 'a4');
+    const PW         = pdf.internal.pageSize.getWidth();   // 297mm
+    const PH         = pdf.internal.pageSize.getHeight();  // 210mm
+    const MARGIN     = 12;
+
+    // Colour palette (matches the app's diff-1…diff-5 theme)
+    const DIFF_COLORS = {
+        1: { bg: [219, 234, 254], border: [56,  189, 248], text: [12, 74, 110]  },
+        2: { bg: [186, 230, 253], border: [14,  165, 233], text: [12, 74, 110]  },
+        3: { bg: [147, 197, 253], border: [2,   132, 199], text: [240,249,255]  },
+        4: { bg: [165, 180, 252], border: [30,  58,  138], text: [240,249,255]  },
+        5: { bg: [254, 202, 202], border: [239, 68,  68 ], text: [239, 68,  68] },
+    };
+
+    // Determine which days actually have sessions
+    const activeDays = DAYS.filter(d => lastScheduleData[d]?.length > 0);
+    if (!activeDays.length) { showError("No sessions to export."); return; }
+
+    // Determine hour range
+    let minH = 24, maxH = 0;
+    activeDays.forEach(d => lastScheduleData[d].forEach(e => {
+        if (e.hour < minH) minH = e.hour;
+        if (e.hour > maxH) maxH = e.hour;
+    }));
+    const numHours = maxH - minH + 1;
+
+    // Layout constants
+    const TIME_COL_W  = 14;
+    const usableW     = PW - MARGIN * 2 - TIME_COL_W;
+    const DAY_COL_W   = usableW / activeDays.length;
+    const HEADER_H    = 10;
+    const usableH     = PH - MARGIN * 2 - HEADER_H;
+    const ROW_H       = usableH / numHours;
+    const gridTop     = MARGIN + HEADER_H;
+    const gridLeft    = MARGIN + TIME_COL_W;
+
+    // ── Background
+    pdf.setFillColor(240, 244, 248);
+    pdf.rect(0, 0, PW, PH, 'F');
+
+    // ── Title
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(13);
+    pdf.setTextColor(30, 58, 138);
+    pdf.text('Studilux Reading Timetable', PW / 2, MARGIN - 2, { align: 'center' });
+
+    // ── Day headers
+    pdf.setFontSize(7);
+    pdf.setFont('helvetica', 'bold');
+    activeDays.forEach((day, i) => {
+        const x = gridLeft + i * DAY_COL_W;
+        // Header background
+        pdf.setFillColor(255, 255, 255);
+        pdf.setDrawColor(220, 230, 245);
+        pdf.roundedRect(x + 1, MARGIN, DAY_COL_W - 2, HEADER_H - 1, 1.5, 1.5, 'FD');
+        pdf.setTextColor(30, 58, 138);
+        pdf.text(day.substring(0, 3).toUpperCase(), x + DAY_COL_W / 2, MARGIN + 6.5, { align: 'center' });
+    });
+
+    // ── Vertical column dividers
+    pdf.setDrawColor(200, 215, 235);
+    pdf.setLineWidth(0.2);
+    activeDays.forEach((_, i) => {
+        const x = gridLeft + i * DAY_COL_W;
+        pdf.line(x, gridTop, x, gridTop + usableH);
+    });
+    // Right edge
+    pdf.line(gridLeft + usableW, gridTop, gridLeft + usableW, gridTop + usableH);
+
+    // ── Time labels + horizontal hour lines
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(5.5);
+    pdf.setTextColor(100, 116, 139);
+    for (let h = 0; h <= numHours; h++) {
+        const y = gridTop + h * ROW_H;
+        pdf.setDrawColor(210, 220, 235);
+        pdf.setLineWidth(0.15);
+        pdf.line(MARGIN + TIME_COL_W, y, MARGIN + TIME_COL_W + usableW, y);
+        if (h < numHours) {
+            const label = String(minH + h).padStart(2, '0') + ':00';
+            pdf.text(label, MARGIN + TIME_COL_W - 1, y + ROW_H * 0.45 + 1, { align: 'right' });
+        }
+    }
+
+    // ── Session blocks
+    activeDays.forEach((day, colIdx) => {
+        const events = lastScheduleData[day] || [];
+        events.forEach(evt => {
+            const subj   = subjects.find(s => s.name === evt.subject) || { difficulty: 1 };
+            const diff   = Math.min(5, Math.max(1, subj.difficulty));
+            const colors = DIFF_COLORS[diff];
+            const x      = gridLeft + colIdx * DAY_COL_W + 1.5;
+            const y      = gridTop + (evt.hour - minH) * ROW_H + 1;
+            const bw     = DAY_COL_W - 3;
+            const bh     = ROW_H - 2;
+
+            // Block fill
+            pdf.setFillColor(...colors.bg);
+            pdf.setDrawColor(...colors.border);
+            pdf.setLineWidth(0.4);
+            pdf.roundedRect(x, y, bw, bh, 1.5, 1.5, 'FD');
+
+            // Left accent bar (mirrors the CSS border-left)
+            pdf.setFillColor(...colors.border);
+            pdf.rect(x, y, 1.5, bh, 'F');
+
+            // Subject name
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(Math.min(6.5, bh > 6 ? 6.5 : bh * 0.55));
+            pdf.setTextColor(...colors.text);
+            const maxChars  = Math.floor(bw / 2.1);
+            const nameLabel = evt.subject.length > maxChars
+                ? evt.subject.substring(0, maxChars - 1) + '…'
+                : evt.subject;
+            pdf.text(nameLabel, x + 3.5, y + Math.min(bh * 0.45, 4.5));
+
+            // Time label (only if block is tall enough)
+            if (bh > 7) {
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(4.5);
+                pdf.setTextColor(...colors.text);
+                const timeLabel = String(evt.hour).padStart(2,'0') + ':00–' + String(evt.hour + 1).padStart(2,'0') + ':00';
+                pdf.text(timeLabel, x + 3.5, y + bh * 0.72);
+            }
+        });
+    });
+
+    // ── Footer
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(5);
+    pdf.setTextColor(148, 163, 184);
+    const now = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+    pdf.text(`Generated by Studilux · ${now}`, PW / 2, PH - 4, { align: 'center' });
+
+    savePdf(pdf, 'Studilux_Timetable.pdf');
+});
+
+// ── Option C: Print / Save as PDF ────────────────────────────────────────────
+// Uses the browser's native print pipeline. A dedicated @media print stylesheet
+// (in style.css) hides everything except the timetable, formats it for paper,
+// and removes all interactive UI. On mobile this opens the system share sheet
+// where the user can save as PDF — no async issues, no canvas, no dependencies.
+document.getElementById('exportOptionC').addEventListener('click', () => {
+    closeExportModal();
+    if (!lastScheduleData) {
+        showError("Generate a timetable first before printing!");
+        return;
+    }
+    window.print();
 });
 
 generateBtn.addEventListener('click', async () => {

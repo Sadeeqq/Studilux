@@ -403,3 +403,78 @@
         font-size: 0.85rem;
     }
 }
+
+/* ══════════════════════════════════════════════════════════
+   PRINT STYLES  (Option C export)
+   When window.print() is called, only the timetable grid
+   is shown. Everything else — sidebar, navbar, overlays,
+   sticky bar, tips — is hidden. The calendar is forced to
+   full page width so all day columns are visible.
+   ══════════════════════════════════════════════════════════ */
+@media print {
+    /* Hide everything by default */
+    body * { visibility: hidden; }
+
+    /* Show only the export area and all its children */
+    #exportArea,
+    #exportArea * { visibility: visible; }
+
+    /* Position the export area to fill the whole page */
+    #exportArea {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: auto !important;
+        padding: 8mm !important;
+        overflow: visible !important;
+        background: #f0f4f8 !important;
+    }
+
+    /* Force the calendar container to show all columns */
+    #calendarContainer {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 150mm !important;
+        overflow: visible !important;
+    }
+
+    /* Days container: fill full width */
+    #daysContainer {
+        min-width: unset !important;
+        width: 100% !important;
+    }
+
+    /* Day columns: equal share of full width */
+    .day-column {
+        flex: 1 !important;
+        min-width: unset !important;
+    }
+
+    /* Time column: fixed narrow width */
+    #timeColumn {
+        width: 14mm !important;
+        min-width: 14mm !important;
+    }
+
+    /* Hide the tip paragraph — not needed on paper */
+    #exportArea > p { display: none !important; }
+
+    /* Remove glassmorphism blur — not rendered by print engines */
+    .schedule-block {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Hide the sticky bar, modal, overlays, sidebar, navbar */
+    #mobileActionBar,
+    #exportModal,
+    #loadingOverlay,
+    #errorBanner,
+    header,
+    aside { display: none !important; }
+
+    /* Use landscape A4 */
+    @page { size: A4 landscape; margin: 0; }
+}

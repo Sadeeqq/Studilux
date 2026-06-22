@@ -189,6 +189,65 @@
         </main>
     </div>
 
+    <!-- Export Method Modal ─────────────────────────────────────────────────────
+         Shown when the user taps "Export PDF". Lets them choose between the
+         three export methods. Hidden by default; opened by openExportModal().  -->
+    <div id="exportModal" class="hidden fixed inset-0 z-[100] items-end sm:items-center justify-center bg-darkblue/30 backdrop-blur-sm p-4">
+        <div class="bg-white/90 backdrop-blur-2xl rounded-3xl shadow-2xl border border-glassborder w-full max-w-sm mx-auto p-6 fade-in">
+
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-5">
+                <div>
+                    <h3 class="text-base font-bold text-darkblue tracking-tight">Export Timetable</h3>
+                    <p class="text-xs text-slate-400 font-bold mt-0.5">Choose an export method</p>
+                </div>
+                <button id="exportModalClose" class="w-8 h-8 rounded-full bg-black/5 hover:bg-black/10 flex items-center justify-center text-slate-400 hover:text-slate-600 transition">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <!-- Option A -->
+            <button id="exportOptionA" class="w-full text-left group bg-white/60 hover:bg-white/90 border border-glassborder rounded-2xl p-4 mb-3 transition-all duration-200 hover:shadow-md active:scale-[0.98]">
+                <div class="flex items-start gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-brand-500/10 flex items-center justify-center shrink-0 mt-0.5">
+                        <i class="fa-solid fa-camera text-brand-500 text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold text-darkblue text-sm">Screenshot PDF</p>
+                        <p class="text-xs text-slate-400 mt-0.5 leading-relaxed">Captures the exact on-screen look as an image embedded in a PDF. Best for desktop &amp; Android Chrome.</p>
+                    </div>
+                </div>
+            </button>
+
+            <!-- Option B -->
+            <button id="exportOptionB" class="w-full text-left group bg-white/60 hover:bg-white/90 border border-glassborder rounded-2xl p-4 mb-3 transition-all duration-200 hover:shadow-md active:scale-[0.98]">
+                <div class="flex items-start gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0 mt-0.5">
+                        <i class="fa-solid fa-file-pdf text-emerald-500 text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold text-darkblue text-sm">Clean Vector PDF <span class="text-[0.6rem] bg-emerald-100 text-emerald-600 font-bold px-2 py-0.5 rounded-full ml-1 uppercase tracking-wide">Recommended</span></p>
+                        <p class="text-xs text-slate-400 mt-0.5 leading-relaxed">Draws the timetable as crisp vector shapes. No screenshot — works on all browsers &amp; devices including iOS Safari.</p>
+                    </div>
+                </div>
+            </button>
+
+            <!-- Option C -->
+            <button id="exportOptionC" class="w-full text-left group bg-white/60 hover:bg-white/90 border border-glassborder rounded-2xl p-4 transition-all duration-200 hover:shadow-md active:scale-[0.98]">
+                <div class="flex items-start gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-violet-500/10 flex items-center justify-center shrink-0 mt-0.5">
+                        <i class="fa-solid fa-print text-violet-500 text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold text-darkblue text-sm">Print / Save as PDF</p>
+                        <p class="text-xs text-slate-400 mt-0.5 leading-relaxed">Opens the browser print dialog. On mobile, use your system share sheet to save as PDF.</p>
+                    </div>
+                </div>
+            </button>
+
+        </div>
+    </div>
+
     <!-- Mobile-only sticky action bar ─────────────────────────────────────────
          Visible only on ≤767px. Mirrors the navbar Export PDF and Generate
          Timetable buttons so they're always reachable without scrolling.
