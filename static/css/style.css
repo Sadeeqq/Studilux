@@ -297,3 +297,109 @@
     .schedule-block span:first-child { font-size: 0.5rem !important; }
     .schedule-block span:last-child  { font-size: 0.45rem !important; }
 }
+
+/* ══════════════════════════════════════════════════════════
+   MOBILE STICKY ACTION BAR
+   Floats at the bottom of the screen on ≤767px only.
+   On desktop: #mobileActionBar is display:none (see below).
+   ══════════════════════════════════════════════════════════ */
+
+/* Hidden on desktop by default */
+#mobileActionBar {
+    display: none;
+}
+
+@media (max-width: 767px) {
+
+    /* ── Hide the navbar buttons on mobile ──────────────────
+       The sticky bar below replaces them. The navbar itself
+       stays visible (logo + brand name still show).         */
+    header .flex.space-x-3 {
+        display: none !important;
+    }
+
+    /* ── Add bottom padding to the page so the last sidebar
+       section isn't hidden behind the sticky bar (72px bar
+       + 8px breathing room = 80px).                        */
+    body {
+        padding-bottom: 80px;
+    }
+
+    /* ── Sticky action bar ──────────────────────────────────
+       Fixed to the bottom of the viewport, full width,
+       always visible regardless of scroll position.        */
+    #mobileActionBar {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 50;
+        gap: 0.625rem;
+        padding: 0.75rem 1rem;
+        /* Safe-area inset for phones with home indicator    */
+        padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-top: 1px solid rgba(255, 255, 255, 0.6);
+        box-shadow: 0 -4px 24px -4px rgba(30, 58, 138, 0.10);
+    }
+
+    /* Export PDF button — matches navbar style */
+    #mobileActionBar #exportPdfBtnMobile {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        background: rgba(255, 255, 255, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        color: #1e3a8a;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 700;
+        font-size: 0.78rem;
+        padding: 0.7rem 0.75rem;
+        border-radius: 9999px;
+        box-shadow: 0 1px 4px rgba(30,58,138,0.08);
+        transition: background 0.2s, transform 0.15s;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+    #mobileActionBar #exportPdfBtnMobile:active {
+        transform: scale(0.97);
+        background: rgba(255, 255, 255, 0.75);
+    }
+    #mobileActionBar #exportPdfBtnMobile .fa-file-pdf {
+        color: #ef4444;
+        font-size: 0.85rem;
+    }
+
+    /* Generate Timetable button — gradient, matches navbar style */
+    #mobileActionBar #generateBtnMobile {
+        flex: 1.4;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        background: linear-gradient(to right, #0ea5e9, #1e3a8a);
+        border: none;
+        color: #ffffff;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 700;
+        font-size: 0.78rem;
+        padding: 0.7rem 0.75rem;
+        border-radius: 9999px;
+        box-shadow: 0 4px 14px -3px rgba(14,165,233,0.35);
+        transition: opacity 0.2s, transform 0.15s;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+    #mobileActionBar #generateBtnMobile:active {
+        opacity: 0.88;
+        transform: scale(0.97);
+    }
+    #mobileActionBar #generateBtnMobile .fa-wand-magic-sparkles {
+        font-size: 0.85rem;
+    }
+}

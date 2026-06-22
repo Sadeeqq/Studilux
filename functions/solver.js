@@ -11,9 +11,39 @@ const DAYS_MAP = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Satur
  * @returns {Object} {success: bool, schedule?: Object, error?: string}
  */
 function solveTimetable(subjects, free_time, allowed_days = null, blocked_slots = null, peak_hours = null) {
+  // ---- 0. Input validation ------------------------------------------------
+  if (!Array.isArray(subjects) || subjects.length === 0) {
+    return { success: false, error: "No subjects provided." };
+  }
+
+  // Validate and normalise each subject; catch NaN and duplicates
+  const seenNames = new Set();
+  for (const s of subjects) {
+    const hrs  = parseInt(s.hours,      10);
+    const diff = parseInt(s.difficulty ?? 3, 10);
+    if (!s.name || typeof s.name !== 'string' || s.name.trim() === '') {
+      return { success: false, error: "Every subject must have a name." };
+    }
+    if (Number.isNaN(hrs) || hrs < 1) {
+      return { success: false, error: `Subject "${s.name}" has invalid hours (must be ≥ 1).` };
+    }
+    if (Number.isNaN(diff) || diff < 1 || diff > 5) {
+      return { success: false, error: `Subject "${s.name}" has invalid difficulty (must be 1–5).` };
+    }
+    const key = s.name.trim().toLowerCase();
+    if (seenNames.has(key)) {
+      return { success: false, error: `Duplicate subject name: "${s.name}". Each subject must have a unique name.` };
+    }
+    seenNames.add(key);
+  }
+
   // ---- 1. Parse inputs ----------------------------------------------------
   const startHour = parseInt(free_time?.start ?? 16, 10);
   const endHour   = parseInt(free_time?.end   ?? 20, 10);
+
+  if (Number.isNaN(startHour) || Number.isNaN(endHour) || startHour >= endHour) {
+    return { success: false, error: "Free time window is invalid. Start hour must be less than end hour." };
+  }
 
   const allowedDayIndices = allowed_days && allowed_days.length
     ? allowed_days.map(d => DAYS_MAP.indexOf(d)).filter(i => i >= 0)
@@ -169,13 +199,13 @@ function solveTimetable(subjects, free_time, allowed_days = null, blocked_slots 
       // Derived: which slots in the active list are peak
       const slotIsPeak = activeSlots.map(([, hour]) => peakSet.has(hour));
 
-      // Count how many peak slots exist in this distribution (used by Fix 3)
-      const totalPeakSlots = slotIsPeak.filter(Boolean).length;
-
-      // Hard-subject total hours needed (used by Fix 3 to judge overflow)
-      const hardHoursTotal = subjects.reduce(
-        (sum, s) => sum + (parseInt(s.difficulty ?? 3, 10) >= 4 ? parseInt(s.hours, 10) : 0), 0
-      );
+      // Precompute suffix count of peak slots: peakSuffixCount[i] = number of
+      // peak slots at indices i..end (inclusive). This lets the backtracker read
+      // "peak slots remaining from idx" in O(1) instead of O(n) per candidate.
+      const peakSuffixCount = new Array(activeSlots.length + 1).fill(0);
+      for (let i = activeSlots.length - 1; i >= 0; i--) {
+        peakSuffixCount[i] = peakSuffixCount[i + 1] + (slotIsPeak[i] ? 1 : 0);
+      }
 
       const remainingHours = {};
       subjects.forEach(s => (remainingHours[s.name] = parseInt(s.hours, 10)));
@@ -248,7 +278,8 @@ function solveTimetable(subjects, free_time, allowed_days = null, blocked_slots 
             const isHard = dVal >= 4;
 
             // Peak slots remaining from this position onward (inclusive of current)
-            const peakSlotsRemaining = slotIsPeak.slice(idx).filter(Boolean).length;
+            // O(1) via precomputed suffix array instead of O(n) slice+filter.
+            const peakSlotsRemaining = peakSuffixCount[idx];
 
             // Hard-subject hours still unplaced, simulating this candidate being placed
             const hardHoursRemaining = Object.keys(subjectsMap).reduce((sum, n) => {
@@ -293,7 +324,7 @@ function solveTimetable(subjects, free_time, allowed_days = null, blocked_slots 
                 if (prevName && subjectsMap[prevName].difficulty >= 4) {
                   let mustUsePeakSlot = false;
                   if (prioritize && isPeak) {
-                    const peakSlotsRemaining = slotIsPeak.slice(idx).filter(Boolean).length;
+                    const peakSlotsRemaining = peakSuffixCount[idx];
                     // NOTE: do NOT subtract 1 for the current candidate here.
                     // We are asking "how many hard hours still need a peak slot,
                     // INCLUDING this one we haven't placed yet?" — that is what

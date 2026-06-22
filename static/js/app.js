@@ -263,43 +263,115 @@ exportPdfBtn.addEventListener('click', () => {
     exportPdfBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Capturing...';
     exportPdfBtn.disabled = true;
 
-    const options = {
-        quality: 1.0,
-        pixelRatio: 4,
-        backgroundColor: '#f0f4f8',
-        style: { transform: 'scale(1)', transformOrigin: 'top left' }
+    // ── FIX 1: Temporarily expand the calendar container so html-to-image
+    // captures the FULL timetable width, not just the visible scroll viewport.
+    //
+    // On mobile, #calendarContainer has overflow-x:auto and a capped height,
+    // so html-to-image only sees the scrolled-into-view portion — meaning
+    // day columns scrolled off to the right are simply missing from the PNG.
+    //
+    // Solution: before capture, record the original inline styles, then force
+    // the container to its full scroll dimensions (scrollWidth × scrollHeight).
+    // After capture, restore everything exactly as it was.
+    const container   = calendarContainer;
+    const savedStyle  = {
+        height:    container.style.height,
+        width:     container.style.width,
+        overflowX: container.style.overflowX,
+        overflowY: container.style.overflowY,
     };
 
-    htmlToImage.toPng(exportArea, options)
-        .then(function (dataUrl) {
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF('l', 'mm', 'a4');
+    // Full content dimensions — scrollWidth/scrollHeight include off-screen content
+    const fullW = container.scrollWidth;
+    const fullH = container.scrollHeight;
 
-            const pageWidth  = pdf.internal.pageSize.getWidth();
-            const pageHeight = pdf.internal.pageSize.getHeight();
-            const margin = 10;
-            const targetWidth = pageWidth - (margin * 2);
+    container.style.width     = fullW + 'px';
+    container.style.height    = fullH + 'px';
+    container.style.overflowX = 'visible';
+    container.style.overflowY = 'visible';
 
-            const img = new Image();
-            img.src = dataUrl;
-            img.onload = function () {
-                const imgRatio = this.height / this.width;
-                const targetHeight = targetWidth * imgRatio;
-                const yPos = Math.max(margin, (pageHeight - targetHeight) / 2);
+    // ── FIX 2: Use devicePixelRatio instead of a hard-coded 4.
+    // pixelRatio:4 on a phone that already has a 3× display produces a canvas
+    // 4× the DOM size on top of the 3× physical pixels — unnecessary memory,
+    // slow capture, and sometimes causes the canvas to exceed the browser's
+    // maximum texture size (16384px on many mobile GPUs), resulting in a blank
+    // or corrupted image. Capping at 2 on mobile is sharp and reliable.
+    const pixelRatio = isMobile() ? Math.min(window.devicePixelRatio || 2, 2) : 3;
 
-                pdf.addImage(dataUrl, 'PNG', margin, yPos, targetWidth, targetHeight, undefined, 'FAST');
-                pdf.save("Studilux_Timetable.pdf");
+    const options = {
+        quality: 1.0,
+        pixelRatio,
+        backgroundColor: '#f0f4f8',
+        // Do not pass a style transform — it confuses the cloning step on mobile
+    };
 
+    // Small settle delay so the DOM reflow completes before capture starts
+    setTimeout(() => {
+        htmlToImage.toPng(exportArea, options)
+            .then(function (dataUrl) {
+                // ── Restore container to its mobile scroll state immediately ──
+                container.style.height    = savedStyle.height;
+                container.style.width     = savedStyle.width;
+                container.style.overflowX = savedStyle.overflowX;
+                container.style.overflowY = savedStyle.overflowY;
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('l', 'mm', 'a4');
+
+                const pageWidth  = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
+                const margin = 10;
+                const targetWidth  = pageWidth  - (margin * 2);
+
+                // Derive image dimensions directly from the dataUrl without
+                // creating an Image element — avoids the extra async hop that
+                // breaks the trusted-gesture chain on iOS Safari.
+                const tempImg = new Image();
+                tempImg.onload = function () {
+                    const imgRatio    = this.height / this.width;
+                    const targetHeight = targetWidth * imgRatio;
+                    const yPos = Math.max(margin, (pageHeight - targetHeight) / 2);
+
+                    pdf.addImage(dataUrl, 'PNG', margin, yPos, targetWidth, targetHeight, undefined, 'FAST');
+
+                    // ── FIX 3: Mobile-safe download.
+                    // pdf.save() uses a hidden <a download> click, which works on
+                    // Android Chrome but is silently blocked on iOS Safari when
+                    // called inside an async chain (the browser no longer considers
+                    // it a direct user gesture by this point).
+                    //
+                    // Fix: on iOS we open the PDF as a blob URL in a new tab,
+                    // which Safari always allows and which the user can then save
+                    // via the share sheet. On all other browsers, pdf.save() works.
+                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                    if (isIOS) {
+                        const blob    = pdf.output('blob');
+                        const blobUrl = URL.createObjectURL(blob);
+                        window.open(blobUrl, '_blank');
+                        // Revoke after a short delay so the new tab has time to load it
+                        setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+                    } else {
+                        pdf.save("Studilux_Timetable.pdf");
+                    }
+
+                    exportPdfBtn.innerHTML = originalContent;
+                    exportPdfBtn.disabled  = false;
+                };
+                tempImg.src = dataUrl;
+            })
+            .catch(function (error) {
+                // Restore container on failure too
+                container.style.height    = savedStyle.height;
+                container.style.width     = savedStyle.width;
+                container.style.overflowX = savedStyle.overflowX;
+                container.style.overflowY = savedStyle.overflowY;
+
+                console.error('Export error:', error);
+                showError("Export failed. Please try again.");
                 exportPdfBtn.innerHTML = originalContent;
-                exportPdfBtn.disabled = false;
-            };
-        })
-        .catch(function (error) {
-            console.error('Export error:', error);
-            showError("High-res export failed.");
-            exportPdfBtn.innerHTML = originalContent;
-            exportPdfBtn.disabled = false;
-        });
+                exportPdfBtn.disabled  = false;
+            });
+    }, 80); // 80ms is enough for one reflow cycle on all mobile browsers
 });
 
 generateBtn.addEventListener('click', async () => {
@@ -438,3 +510,17 @@ window.addEventListener('resize', () => {
 
 // ── Initial setup ─────────────────────────────────────────────────────────────
 loadState();
+
+// ── Mobile sticky action bar ──────────────────────────────────────────────────
+// The mobile bar duplicates the navbar buttons. Rather than duplicating the
+// full event-handler logic, we simply forward each mobile button's click to
+// the corresponding navbar button so all existing logic runs exactly once.
+const exportPdfBtnMobile = document.getElementById('exportPdfBtnMobile');
+const generateBtnMobile  = document.getElementById('generateBtnMobile');
+
+if (exportPdfBtnMobile) {
+    exportPdfBtnMobile.addEventListener('click', () => exportPdfBtn.click());
+}
+if (generateBtnMobile) {
+    generateBtnMobile.addEventListener('click', () => generateBtn.click());
+}

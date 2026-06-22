@@ -189,6 +189,21 @@
         </main>
     </div>
 
+    <!-- Mobile-only sticky action bar ─────────────────────────────────────────
+         Visible only on ≤767px. Mirrors the navbar Export PDF and Generate
+         Timetable buttons so they're always reachable without scrolling.
+         The navbar copies are hidden on mobile via CSS (see style.css).       -->
+    <div id="mobileActionBar">
+        <button id="exportPdfBtnMobile">
+            <i class="fa-solid fa-file-pdf"></i>
+            <span>Export PDF</span>
+        </button>
+        <button id="generateBtnMobile">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <span>Generate Timetable</span>
+        </button>
+    </div>
+
     <!-- Scripts -->
     <script src="js/app.js?v=2"></script>
 </body>
