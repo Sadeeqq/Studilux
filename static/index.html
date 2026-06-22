@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Studilux: AI Timetable Generator</title>
     <!-- High-Fidelity Rendering Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
@@ -173,7 +173,7 @@
             <div id="exportArea" class="p-4 md:p-8 lg:p-12 flex-1 w-full flex flex-col items-center overflow-x-auto">
                 <h2 class="text-3xl font-bold text-darkblue mb-8 tracking-tight text-center">Studilux Reading Timetable</h2>
 <p class="text-[0.7rem] text-slate-500 font-bold mb-6 uppercase tracking-wider flex items-center"><i class="fa-solid fa-circle-info text-brand-500 mr-2 text-[0.8rem]"></i> Tip: Click any grid cell to toggle it as <span class="text-slate-800 underline decoration-slate-400 mx-1">Blocked (Busy Window)</span>, or drag study blocks to reschedule.</p>
-                <div class="bg-white/40 backdrop-blur-3xl rounded-3xl shadow-xl border border-glassborder flex overflow-hidden transition-all duration-500 w-full" style="height: max(300px, calc(var(--num-hours, 24) * 60px));" id="calendarContainer">
+                <div class="bg-white/40 backdrop-blur-3xl rounded-3xl shadow-xl border border-glassborder flex overflow-hidden transition-all duration-500 w-full" style="height: max(300px, calc(var(--num-hours, 24) * 60px)); touch-action: pan-x pan-y;" id="calendarContainer">
                     
                     <!-- Time Line -->
                     <div class="w-20 border-r border-glassborder flex flex-col bg-white/60" id="timeColumn">

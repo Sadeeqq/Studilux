@@ -1,11 +1,13 @@
-/* Custom scrollbar for bright mode */
-.custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-}
+/* ============================================================
+   Studilux — style.css
+   Desktop styles are unchanged.
+   All mobile fixes live inside @media (max-width: 767px) or
+   @media (max-width: 479px) blocks at the bottom.
+   ============================================================ */
+
+/* ── Custom scrollbar (bright mode) ── */
+.custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb {
     background: rgba(30, 58, 138, 0.1);
     border-radius: 10px;
@@ -14,19 +16,17 @@
     background: rgba(30, 58, 138, 0.2);
 }
 
-/* Animations */
+/* ── Animations ── */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(12px) scale(0.98); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
+    to   { opacity: 1; transform: translateY(0)    scale(1);    }
 }
-.fade-in {
-    animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
+.fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
-/* Calendar Grid specific styling */
+/* ── Calendar grid ── */
 .time-slot {
     height: calc(100% / var(--num-hours, 24));
-    border-bottom: 1px solid rgba(30, 58, 138, 0.05); /* very subtle blue lines */
+    border-bottom: 1px solid rgba(30, 58, 138, 0.05);
     box-sizing: border-box;
     position: relative;
 }
@@ -34,22 +34,21 @@
 .day-column {
     position: relative;
     border-right: 1px solid rgba(30, 58, 138, 0.06);
-    /* Subtle vertical grid dots pattern */
     background-image: radial-gradient(rgba(30, 58, 138, 0.04) 1px, transparent 1px);
     background-size: 20px 20px;
 }
-.day-column:last-child {
-    border-right: none;
-}
+.day-column:last-child { border-right: none; }
 
-/* Glowing Glassmorphism Blocks */
+/* ── Schedule blocks ── */
 .schedule-block {
     position: absolute;
     left: 4px;
     right: 4px;
     border-radius: 0.75rem;
     padding: 0.75rem 1rem;
-    box-shadow: 0 4px 15px -3px rgba(30, 58, 138, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    box-shadow:
+        0 4px 15px -3px rgba(30, 58, 138, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.7);
     overflow: hidden;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     backdrop-filter: blur(12px);
@@ -59,30 +58,242 @@
 .schedule-block:hover {
     transform: scale(1.02) translateY(-2px);
     z-index: 20;
-    box-shadow: 0 12px 25px -5px rgba(30, 58, 138, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    box-shadow:
+        0 12px 25px -5px rgba(30, 58, 138, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
-/* Sky/DarkBlue/Ash Theme Colors for Difficulty Blocks */
-/* Diff 1 - Soft Sky */
-.diff-1 { background-color: rgba(56, 189, 248, 0.4); border: 1px solid rgba(56, 189, 248, 0.5); border-left: 4px solid #38bdf8; color: #0c4a6e; } 
-/* Diff 2 - Bright Blue */
-.diff-2 { background-color: rgba(14, 165, 233, 0.4); border: 1px solid rgba(14, 165, 233, 0.5); border-left: 4px solid #0ea5e9; color: #0c4a6e; } 
-/* Diff 3 - Deep Blue */
-.diff-3 { background-color: rgba(2, 132, 199, 0.4); border: 1px solid rgba(2, 132, 199, 0.5); border-left: 4px solid #0284c7; color: #f0f9ff; } 
-/* Diff 4 - Dark Blue */
-.diff-4 { background-color: rgba(30, 58, 138, 0.4); border: 1px solid rgba(30, 58, 138, 0.5); border-left: 4px solid #1e3a8a; color: #f0f9ff; } 
-/* Diff 5 - Red */
-.diff-5 { background-color: rgba(239, 68, 68, 0.3); border: 1px solid rgba(239, 68, 68, 0.4); border-left: 4px solid #ef4444; color: #ef4444; } 
+/* ── Difficulty colour theme ── */
+.diff-1 { background-color:rgba(56,189,248,0.4);  border:1px solid rgba(56,189,248,0.5);  border-left:4px solid #38bdf8; color:#0c4a6e; }
+.diff-2 { background-color:rgba(14,165,233,0.4);  border:1px solid rgba(14,165,233,0.5);  border-left:4px solid #0ea5e9; color:#0c4a6e; }
+.diff-3 { background-color:rgba(2,132,199,0.4);   border:1px solid rgba(2,132,199,0.5);   border-left:4px solid #0284c7; color:#f0f9ff; }
+.diff-4 { background-color:rgba(30,58,138,0.4);   border:1px solid rgba(30,58,138,0.5);   border-left:4px solid #1e3a8a; color:#f0f9ff; }
+.diff-5 { background-color:rgba(239,68,68,0.3);   border:1px solid rgba(239,68,68,0.4);   border-left:4px solid #ef4444; color:#ef4444; }
 
-/* Stripes/dashed border for blocked slots */
+/* ── Blocked slots ── */
 .blocked-slot {
-    background-color: rgba(148, 163, 184, 0.2) !important;
-    background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(148, 163, 184, 0.08) 10px, rgba(148, 163, 184, 0.08) 20px) !important;
-    border: 1px dashed rgba(148, 163, 184, 0.3) !important;
+    background-color: rgba(148,163,184,0.2) !important;
+    background-image: repeating-linear-gradient(
+        45deg, transparent, transparent 10px,
+        rgba(148,163,184,0.08) 10px, rgba(148,163,184,0.08) 20px
+    ) !important;
+    border: 1px dashed rgba(148,163,184,0.3) !important;
     cursor: pointer;
     transition: background-color 0.2s ease;
 }
-.blocked-slot:hover {
-    background-color: rgba(148, 163, 184, 0.3) !important;
+.blocked-slot:hover { background-color: rgba(148,163,184,0.3) !important; }
+
+
+/* ══════════════════════════════════════════════════════════
+   MOBILE FIXES  ≤ 767 px
+   Every rule here is new or overrides a desktop value.
+   Desktop layout is completely untouched above this line.
+   ══════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+
+    /* ── 1. Body / root layout ────────────────────────────
+       Desktop: overflow:hidden, fixed height viewport.
+       Mobile:  let the page scroll naturally so users can
+                reach the sidebar controls AND the calendar. */
+    body {
+        height: auto !important;
+        overflow: auto !important;
+        /* prevent iOS rubber-band revealing blank space */
+        overscroll-behavior-y: none;
+    }
+
+    /* ── 2. Navbar ────────────────────────────────────────
+       Stack logo + buttons without horizontal overflow.    */
+    header > div {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        padding-top: 0.875rem;
+        padding-bottom: 0.875rem;
+    }
+    /* Button row: shrink text, keep them side-by-side */
+    header .flex.space-x-3 {
+        width: 100%;
+        gap: 0.5rem;
+    }
+    header .flex.space-x-3 > button {
+        flex: 1;
+        font-size: 0.72rem;
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+        white-space: nowrap;
+        justify-content: center;
+    }
+
+    /* ── 3. Main workspace ────────────────────────────────
+       Desktop: side-by-side, overflow:hidden.
+       Mobile:  stacked column, scrollable.                 */
+    .flex.flex-col.sm\\:flex-row.flex-1 {
+        flex-direction: column !important;
+        overflow: visible !important;
+        height: auto !important;
+    }
+
+    /* ── 4. Sidebar ───────────────────────────────────────
+       Full width on mobile, natural height (no flex-fixed) */
+    aside {
+        width: 100% !important;
+        height: auto !important;
+        overflow-y: visible !important;
+        border-right: none !important;
+        border-bottom: 1px solid rgba(255,255,255,0.6);
+        box-shadow: none;
+    }
+    aside > div { padding: 1.25rem !important; }
+
+    /* ── 5. Main content area ─────────────────────────────*/
+    main {
+        overflow: visible !important;
+        padding-bottom: 2rem;
+    }
+
+    /* ── 6. Calendar container ────────────────────────────
+       FIX: the inline style set by JS uses --num-hours and
+       a 60px-per-row multiplier — too tall on mobile.
+       We lock the HEIGHT to a shorter row, and let the
+       WIDTH scroll horizontally via overflow-x.
+       !important is needed to beat the inline style.       */
+    #calendarContainer {
+        height: max(260px, calc(var(--num-hours, 24) * 44px)) !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        /* momentum scrolling on iOS */
+        -webkit-overflow-scrolling: touch;
+        /* GPU compositing: avoids layout-repaint on scroll  */
+        will-change: scroll-position;
+        /* smooth native scroll, no janky JS scroll events  */
+        scroll-behavior: auto;
+    }
+
+    /* ── 7. Time column ───────────────────────────────────
+       Shrink from 80px (w-20) to 48px so day columns get
+       more room. Must not shrink further (labels truncate). */
+    #timeColumn {
+        width: 48px !important;
+        min-width: 48px !important;
+        flex-shrink: 0 !important;
+    }
+    #timeColumn .time-slot span {
+        font-size: 0.55rem !important;
+        letter-spacing: 0 !important;
+    }
+
+    /* ── 8. Days container: horizontal scroll ─────────────
+       Each day column gets a min-width so 7 columns never
+       compress below a readable size.                      */
+    #daysContainer {
+        /* do NOT use flex-1 overflow hidden; let it be wide */
+        display: flex !important;
+        flex-shrink: 0 !important;
+        /* minimum width = 7 cols × 72px + 48px time col    */
+        min-width: calc(7 * 72px) !important;
+    }
+    .day-column {
+        min-width: 72px !important;
+        /* remove flex-1 behaviour that compresses columns  */
+        flex: 0 0 72px !important;
+    }
+    /* Day header text: tighter so it fits 72px */
+    .day-column > div:first-child {
+        font-size: 0.6rem !important;
+        letter-spacing: 0.05em !important;
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+        height: 38px !important;
+    }
+    /* Match time column spacer height to the shorter header */
+    #timeColumn > div:first-child {
+        height: 38px !important;
+    }
+
+    /* ── 9. Schedule blocks ───────────────────────────────
+       Tighten padding, shrink font so text fits 72px cols. */
+    .schedule-block {
+        left: 2px !important;
+        right: 2px !important;
+        padding: 0.35rem 0.4rem !important;
+        border-radius: 0.5rem !important;
+    }
+    .schedule-block span:first-child { font-size: 0.55rem !important; }
+    .schedule-block span:last-child  { font-size: 0.5rem  !important; }
+
+    /* ── 10. Export / calendar wrapper ───────────────────*/
+    #exportArea {
+        padding: 1rem !important;
+    }
+    #exportArea > h2 { font-size: 1.25rem !important; margin-bottom: 1rem !important; }
+
+    /* ── 11. Error banner ─────────────────────────────────
+       Remove the left-50% translate trick that overflows.  */
+    #errorBanner {
+        position: fixed !important;
+        top: 0.75rem !important;
+        left: 0.75rem !important;
+        right: 0.75rem !important;
+        transform: none !important;
+        width: auto !important;
+        max-width: none !important;
+    }
+
+    /* ── 12. Peak hour buttons ────────────────────────────
+       Give each button a minimum size so they don't vanish */
+    #peakHoursContainer {
+        gap: 0.35rem !important;
+    }
+    #peakHoursContainer > button {
+        min-width: 52px !important;
+        font-size: 0.65rem !important;
+        padding: 0.45rem 0.35rem !important;
+    }
+
+    /* ── 13. Time slot height re-calibration ──────────────
+       The CSS var drives height. At 44px/row (set above on
+       #calendarContainer) the slot height recalculates
+       automatically via: height: calc(100% / --num-hours). 
+       No extra rule needed — the container height drives it. */
+
+    /* ── 14. Hover states → active states on touch ───────
+       :hover lingers on touch; use :active for feedback.   */
+    .schedule-block:hover {
+        transform: none;
+        box-shadow: 0 4px 15px -3px rgba(30,58,138,0.1), inset 0 1px 0 rgba(255,255,255,0.7);
+    }
+    .schedule-block:active {
+        transform: scale(1.02) translateY(-2px);
+        z-index: 20;
+    }
+    .blocked-slot:hover { background-color: rgba(148,163,184,0.2) !important; }
+    .blocked-slot:active{ background-color: rgba(148,163,184,0.3) !important; }
 }
 
+
+/* ── Extra-small screens (≤ 479 px) ── */
+@media (max-width: 479px) {
+
+    /* Tighter sidebar padding */
+    aside > div { padding: 1rem !important; }
+
+    /* Even smaller nav text */
+    header .flex.space-x-3 > button {
+        font-size: 0.67rem !important;
+        padding-left: 0.6rem !important;
+        padding-right: 0.6rem !important;
+    }
+    /* Hide icon text on export button to save space */
+    #exportPdfBtn > span,
+    #generateBtn > span { display: none; }
+
+    /* Slightly narrower day columns on the smallest phones,
+       still readable, still scrollable */
+    .day-column        { min-width: 64px !important; flex: 0 0 64px !important; }
+    #daysContainer     { min-width: calc(7 * 64px) !important; }
+
+    .schedule-block span:first-child { font-size: 0.5rem !important; }
+    .schedule-block span:last-child  { font-size: 0.45rem !important; }
+}

@@ -34,15 +34,18 @@ const peakHoursContainer = document.getElementById('peakHoursContainer');
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
+// ── Mobile detection helper ───────────────────────────────────────────────────
+// Used to adjust row heights and disable desktop-only drag behaviour on touch.
+function isMobile() {
+    return window.innerWidth <= 767;
+}
+
 function loadState() {
-    // Load persisted subjects or start empty
     subjects = loadSubjects();
     lastScheduleData = null;
-    
     blockedSlots = new Set();
     peakHours = new Set([16, 17]);
 
-    // Set up listeners for free time hours to update the peak hours selector
     document.getElementById('freeStart').addEventListener('change', renderPeakHoursSelector);
     document.getElementById('freeEnd').addEventListener('change', renderPeakHoursSelector);
 
@@ -54,42 +57,51 @@ function loadState() {
 function renderPeakHoursSelector() {
     if (!peakHoursContainer) return;
     peakHoursContainer.innerHTML = '';
-    
+
     const start = parseInt(document.getElementById('freeStart').value) || 0;
     const end = parseInt(document.getElementById('freeEnd').value) || 24;
-    
+
     for (let h = start; h < end; h++) {
         const btn = document.createElement('button');
         btn.type = 'button';
         const isPeak = peakHours.has(h);
-        
-        btn.className = isPeak 
+
+        btn.className = isPeak
             ? 'py-2 px-1 rounded-xl bg-amber-500/15 border-2 border-amber-500 text-amber-700 shadow-sm transition duration-200 focus:outline-none flex items-center justify-center'
             : 'py-2 px-1 rounded-xl bg-white/40 border border-glassborder text-slate-500 hover:bg-white/60 hover:text-slate-700 transition duration-200 focus:outline-none flex items-center justify-center';
-            
+
         btn.innerHTML = `<i class="fa-solid fa-bolt text-[0.65rem] ${isPeak ? 'text-amber-500' : 'text-slate-300'} mr-1"></i> ${h.toString().padStart(2, '0')}:00`;
-        
+
         btn.addEventListener('click', () => {
-            if (peakHours.has(h)) {
-                peakHours.delete(h);
-            } else {
-                peakHours.add(h);
-            }
+            if (peakHours.has(h)) { peakHours.delete(h); } else { peakHours.add(h); }
             renderPeakHoursSelector();
         });
         peakHoursContainer.appendChild(btn);
     }
 }
 
+// ── Calendar height helper ────────────────────────────────────────────────────
+// FIX: the original code always applied a fixed inline style using 60px/row.
+// On mobile the CSS overrides this via !important, but we also set a sensible
+// value directly so there is no flash of the wrong height on first render.
+function setCalendarHeight(numHours) {
+    const rowPx = isMobile() ? 44 : 60;
+    const minPx = isMobile() ? 260 : 300;
+    calendarContainer.style.height = `max(${minPx}px, calc(${numHours} * ${rowPx}px))`;
+}
+
 function initGrid(minHour = 0, maxHour = 23, usedDays = DAYS) {
     currentMinHour = minHour;
     currentMaxHour = maxHour;
     currentDays = usedDays;
-    
+
     const numHours = maxHour - minHour + 1;
     document.documentElement.style.setProperty('--num-hours', numHours);
 
-    // Layout Time Column
+    // FIX: use the mobile-aware height helper instead of a hard-coded 60px.
+    setCalendarHeight(numHours);
+
+    // ── Time Column ──────────────────────────────────────────────────────────
     timeColumn.innerHTML = '';
     const timeSpacer = document.createElement('div');
     timeSpacer.className = 'h-[45px] w-full shrink-0 border-b border-glassborder bg-white/60 backdrop-blur-xl z-30';
@@ -105,14 +117,13 @@ function initGrid(minHour = 0, maxHour = 23, usedDays = DAYS) {
     }
     timeColumn.appendChild(timeGridBody);
 
-    // Layout Days
+    // ── Day Columns ──────────────────────────────────────────────────────────
     daysContainer.innerHTML = '';
     usedDays.forEach(day => {
         const dayDiv = document.createElement('div');
         dayDiv.className = 'day-column flex-1 flex flex-col relative';
         dayDiv.id = `col-${day}`;
 
-        // Header (Day Name)
         const header = document.createElement('div');
         header.className = 'w-full text-center py-3.5 bg-white/60 backdrop-blur-xl border-b border-glassborder z-30 font-bold tracking-widest text-darkblue text-xs uppercase shadow-sm h-[45px] flex items-center justify-center shrink-0 cursor-default';
         header.innerText = day;
@@ -122,7 +133,6 @@ function initGrid(minHour = 0, maxHour = 23, usedDays = DAYS) {
         gridBody.className = 'flex-1 relative w-full';
         gridBody.id = `gridbody-${day}`;
 
-        // Render empty slots for the grid background with DRAG & DROP zones
         for (let i = minHour; i <= maxHour; i++) {
             const slot = document.createElement('div');
             slot.className = 'time-slot w-full transition-all duration-200 cursor-pointer hover:bg-slate-200/20';
@@ -133,46 +143,37 @@ function initGrid(minHour = 0, maxHour = 23, usedDays = DAYS) {
                 slot.innerHTML = `
                     <div class="h-full flex items-center justify-center text-[0.55rem] text-slate-500/80 font-bold uppercase tracking-wider select-none pointer-events-none">
                         <i class="fa-solid fa-ban mr-1 text-[0.6rem] text-slate-400"></i> Blocked
-                    </div>
-                `;
+                    </div>`;
             }
 
-            // Click cell to toggle Busy Window / Blocked slot
+            // Toggle blocked on click / tap
             slot.addEventListener('click', (e) => {
                 if (e.target.closest('.schedule-block')) return;
-                if (blockedSlots.has(slotKey)) {
-                    blockedSlots.delete(slotKey);
-                } else {
-                    blockedSlots.add(slotKey);
-                }
-                
-                if (lastScheduleData) {
-                    renderSchedule(lastScheduleData);
-                } else {
-                    initGrid(currentMinHour, currentMaxHour, currentDays);
-                }
+                if (blockedSlots.has(slotKey)) { blockedSlots.delete(slotKey); } else { blockedSlots.add(slotKey); }
+                if (lastScheduleData) { renderSchedule(lastScheduleData); } else { initGrid(currentMinHour, currentMaxHour, currentDays); }
             });
 
-            // Drag and Drop Logic
-            slot.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                if (!blockedSlots.has(slotKey)) {
-                    slot.classList.add('bg-brand-400/20');
-                }
-            });
-            slot.addEventListener('dragleave', () => {
-                slot.classList.remove('bg-brand-400/20');
-            });
-            slot.addEventListener('drop', (e) => {
-                e.preventDefault();
-                slot.classList.remove('bg-brand-400/20');
-                if (blockedSlots.has(slotKey)) return;
-                
-                const dataStr = e.dataTransfer.getData('text/plain');
-                if (!dataStr) return;
-                const data = JSON.parse(dataStr);
-                handleDrop(data.day, data.hour, day, i);
-            });
+            // ── Desktop drag-and-drop (unchanged) ───────────────────────────
+            // Guarded by isMobile() so we never attach pointless event listeners
+            // on touch devices (avoids passive-listener warnings and saves memory).
+            if (!isMobile()) {
+                slot.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    if (!blockedSlots.has(slotKey)) { slot.classList.add('bg-brand-400/20'); }
+                });
+                slot.addEventListener('dragleave', () => {
+                    slot.classList.remove('bg-brand-400/20');
+                });
+                slot.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    slot.classList.remove('bg-brand-400/20');
+                    if (blockedSlots.has(slotKey)) return;
+                    const dataStr = e.dataTransfer.getData('text/plain');
+                    if (!dataStr) return;
+                    const data = JSON.parse(dataStr);
+                    handleDrop(data.day, data.hour, day, i);
+                });
+            }
 
             gridBody.appendChild(slot);
         }
@@ -188,18 +189,15 @@ function handleDrop(oldDay, oldHour, newDay, newHour) {
     const eventIndex = lastScheduleData[oldDay].findIndex(e => e.hour === oldHour);
     if (eventIndex !== -1) {
         const evt = lastScheduleData[oldDay].splice(eventIndex, 1)[0];
-        evt.hour = newHour; // Update to the newly dropped hour
+        evt.hour = newHour;
 
-        if (!lastScheduleData[newDay]) {
-            lastScheduleData[newDay] = [];
-        }
+        if (!lastScheduleData[newDay]) { lastScheduleData[newDay] = []; }
 
-        // Handle Overlaps using a Simple Swap mechanics
         const collisionIdx = lastScheduleData[newDay].findIndex(e => e.hour === newHour);
         if (collisionIdx !== -1) {
             const bumped = lastScheduleData[newDay].splice(collisionIdx, 1)[0];
             bumped.hour = oldHour;
-            lastScheduleData[oldDay].push(bumped); // Push back to the old slot
+            lastScheduleData[oldDay].push(bumped);
         }
 
         lastScheduleData[newDay].push(evt);
@@ -211,7 +209,6 @@ function renderSubjects() {
     subjectsList.innerHTML = '';
     subjects.forEach((subj, idx) => {
         const el = document.createElement('div');
-        // Bright glass card update
         el.className = 'bg-white/60 backdrop-blur-xl p-4 rounded-2xl border border-glassborder shadow-sm flex justify-between items-center fade-in hover:bg-white/80 transition duration-300 group cursor-default';
         el.innerHTML = `
             <div>
@@ -232,19 +229,15 @@ function removeSubject(idx) {
     renderSubjects();
     saveSubjects();
 }
-
-// Ensure the function is in the global scope if rendering as string
 window.removeSubject = removeSubject;
 
 function showError(msg) {
     errorMsg.innerText = msg;
     errorBanner.classList.remove('hidden');
-    setTimeout(() => {
-        errorBanner.classList.add('hidden');
-    }, 5000);
+    setTimeout(() => { errorBanner.classList.add('hidden'); }, 5000);
 }
 
-// Event Listeners
+// ── Event Listeners ───────────────────────────────────────────────────────────
 subjectForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const name = document.getElementById('subjName').value.trim();
@@ -266,40 +259,32 @@ exportPdfBtn.addEventListener('click', () => {
         return;
     }
 
-    // UI Feedback
     const originalContent = exportPdfBtn.innerHTML;
     exportPdfBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Capturing...';
     exportPdfBtn.disabled = true;
 
-    // We use a high pixel ratio (4x) to ensure the image is crisp like a vector
     const options = {
         quality: 1.0,
         pixelRatio: 4,
         backgroundColor: '#f0f4f8',
-        style: {
-            transform: 'scale(1)',
-            transformOrigin: 'top left'
-        }
+        style: { transform: 'scale(1)', transformOrigin: 'top left' }
     };
 
     htmlToImage.toPng(exportArea, options)
         .then(function (dataUrl) {
             const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF('l', 'mm', 'a4'); // Landscape A4
+            const pdf = new jsPDF('l', 'mm', 'a4');
 
-            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageWidth  = pdf.internal.pageSize.getWidth();
             const pageHeight = pdf.internal.pageSize.getHeight();
             const margin = 10;
             const targetWidth = pageWidth - (margin * 2);
 
-            // Calculate height to maintain aspect ratio
             const img = new Image();
             img.src = dataUrl;
             img.onload = function () {
                 const imgRatio = this.height / this.width;
                 const targetHeight = targetWidth * imgRatio;
-
-                // Center vertically if it fits, otherwise cap at page height
                 const yPos = Math.max(margin, (pageHeight - targetHeight) / 2);
 
                 pdf.addImage(dataUrl, 'PNG', margin, yPos, targetWidth, targetHeight, undefined, 'FAST');
@@ -310,7 +295,7 @@ exportPdfBtn.addEventListener('click', () => {
             };
         })
         .catch(function (error) {
-            console.error('oops, something went wrong!', error);
+            console.error('Export error:', error);
             showError("High-res export failed.");
             exportPdfBtn.innerHTML = originalContent;
             exportPdfBtn.disabled = false;
@@ -327,7 +312,7 @@ generateBtn.addEventListener('click', async () => {
 
     try {
         const start = parseInt(document.getElementById('freeStart').value);
-        const end = parseInt(document.getElementById('freeEnd').value);
+        const end   = parseInt(document.getElementById('freeEnd').value);
         if (start >= end) {
             showError("Start hour must be less than end hour.");
             loadingOverlay.classList.add('hidden');
@@ -346,9 +331,9 @@ generateBtn.addEventListener('click', async () => {
         const response = await fetch('https://personal-timetable.onrender.com/api/generate_schedule', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                subjects, 
-                free_time: { start, end }, 
+            body: JSON.stringify({
+                subjects,
+                free_time: { start, end },
                 allowed_days: allowedDays,
                 blocked_slots: Array.from(blockedSlots),
                 peak_hours: activePeakHours
@@ -371,13 +356,11 @@ generateBtn.addEventListener('click', async () => {
 });
 
 function renderSchedule(scheduleData) {
-    // Clear old visual blocks
     document.querySelectorAll('.schedule-block').forEach(e => e.remove());
 
-    // Determine min and max hours used to crop the timetable
     let minHour = 24;
     let maxHour = -1;
-    let usedDays = new Set();
+    const usedDays = new Set();
 
     DAYS.forEach(day => {
         const events = scheduleData[day] || [];
@@ -390,15 +373,9 @@ function renderSchedule(scheduleData) {
         }
     });
 
-    // Fallback if no valid schedule found
-    if (minHour > maxHour) {
-        minHour = 0; maxHour = 23;
-    }
+    if (minHour > maxHour) { minHour = 0; maxHour = 23; }
 
-    // Identify days with events, ensuring all 7 days are ALWAYS visible
     const daysToRender = [...DAYS];
-
-    // Redraw the grid to fit the scheduled frames exactly
     initGrid(minHour, maxHour, daysToRender);
 
     const numHours = maxHour - minHour + 1;
@@ -410,35 +387,35 @@ function renderSchedule(scheduleData) {
         const events = scheduleData[day] || [];
 
         events.forEach((evt, i) => {
-            // Find subject config to get difficulty
             const subjConfig = subjects.find(s => s.name === evt.subject) || { difficulty: 1 };
 
             const block = document.createElement('div');
-            // Basic styles + variable background class
-            block.className = `schedule-block diff-${subjConfig.difficulty} fade-in cursor-grab active:cursor-grabbing`;
+            // FIX: remove cursor-grab on mobile — drag is desktop-only
+            block.className = isMobile()
+                ? `schedule-block diff-${subjConfig.difficulty} fade-in`
+                : `schedule-block diff-${subjConfig.difficulty} fade-in cursor-grab active:cursor-grabbing`;
             block.style.animationDelay = `${i * 0.05}s`;
 
-            // Allow drag and drop
-            block.draggable = true;
-            block.addEventListener('dragstart', (e) => {
-                // Store unique identity of this block
-                e.dataTransfer.setData('text/plain', JSON.stringify({ day, hour: evt.hour }));
-                // Visual feedback during drag
-                setTimeout(() => block.classList.add('opacity-30'), 0);
-            });
-            block.addEventListener('dragend', () => {
-                block.classList.remove('opacity-30');
-            });
+            // ── Desktop drag-and-drop only ───────────────────────────────────
+            if (!isMobile()) {
+                block.draggable = true;
+                block.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', JSON.stringify({ day, hour: evt.hour }));
+                    setTimeout(() => block.classList.add('opacity-30'), 0);
+                });
+                block.addEventListener('dragend', () => {
+                    block.classList.remove('opacity-30');
+                });
+            }
 
             const positionIdx = evt.hour - minHour;
-            // Positioning height with gaps to feel floating
-            block.style.top = `calc(${positionIdx} * ${blockHeightPct}% + 4px)`;
+            block.style.top    = `calc(${positionIdx} * ${blockHeightPct}% + 4px)`;
             block.style.height = `calc(${blockHeightPct}% - 8px)`;
 
             block.innerHTML = `
                 <div class="h-full flex flex-col justify-center overflow-hidden pointer-events-none">
                     <span class="font-bold text-[0.7rem] uppercase tracking-[0.1em] block truncate mb-1">${evt.subject}</span>
-                    <span class="text-[0.65rem] opacity-75 font-mono tracking-wider">${evt.hour.toString().padStart(2, '0')}:00 - ${(evt.hour + 1).toString().padStart(2, '0')}:00</span>
+                    <span class="text-[0.65rem] opacity-75 font-mono tracking-wider">${evt.hour.toString().padStart(2,'0')}:00 - ${(evt.hour+1).toString().padStart(2,'0')}:00</span>
                 </div>
             `;
 
@@ -447,5 +424,17 @@ function renderSchedule(scheduleData) {
     });
 }
 
-// Initial Setup
+// ── Re-calculate calendar height on window resize ─────────────────────────────
+// This ensures the height is correct if the user rotates their phone or resizes
+// a browser window between mobile and desktop breakpoints.
+let resizeTimer;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+        const numHours = currentMaxHour - currentMinHour + 1;
+        setCalendarHeight(numHours);
+    }, 150);
+}, { passive: true });
+
+// ── Initial setup ─────────────────────────────────────────────────────────────
 loadState();
