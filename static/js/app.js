@@ -81,9 +81,6 @@ function renderPeakHoursSelector() {
 }
 
 // ── Calendar height helper ────────────────────────────────────────────────────
-// FIX: the original code always applied a fixed inline style using 60px/row.
-// On mobile the CSS overrides this via !important, but we also set a sensible
-// value directly so there is no flash of the wrong height on first render.
 function setCalendarHeight(numHours) {
     const rowPx = isMobile() ? 44 : 60;
     const minPx = isMobile() ? 260 : 300;
@@ -98,7 +95,6 @@ function initGrid(minHour = 0, maxHour = 23, usedDays = DAYS) {
     const numHours = maxHour - minHour + 1;
     document.documentElement.style.setProperty('--num-hours', numHours);
 
-    // FIX: use the mobile-aware height helper instead of a hard-coded 60px.
     setCalendarHeight(numHours);
 
     // ── Time Column ──────────────────────────────────────────────────────────
@@ -146,16 +142,12 @@ function initGrid(minHour = 0, maxHour = 23, usedDays = DAYS) {
                     </div>`;
             }
 
-            // Toggle blocked on click / tap
             slot.addEventListener('click', (e) => {
                 if (e.target.closest('.schedule-block')) return;
                 if (blockedSlots.has(slotKey)) { blockedSlots.delete(slotKey); } else { blockedSlots.add(slotKey); }
                 if (lastScheduleData) { renderSchedule(lastScheduleData); } else { initGrid(currentMinHour, currentMaxHour, currentDays); }
             });
 
-            // ── Desktop drag-and-drop (unchanged) ───────────────────────────
-            // Guarded by isMobile() so we never attach pointless event listeners
-            // on touch devices (avoids passive-listener warnings and saves memory).
             if (!isMobile()) {
                 slot.addEventListener('dragover', (e) => {
                     e.preventDefault();
@@ -254,54 +246,9 @@ subjectForm.addEventListener('submit', (e) => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// EXPORT SYSTEM — three independent methods, user picks via modal
-//
-//  Option A: Screenshot → PDF  (html-to-image + jsPDF)
-//            Captures the exact on-screen look. Works on desktop and Android.
-//            On iOS, opens as a blob URL in a new tab for the user to save.
-//
-//  Option B: Programmatic PDF  (jsPDF drawing API, reads lastScheduleData)
-//            Draws the timetable as clean vector shapes — no canvas, no CORS
-//            taint risk, works on every browser and device reliably.
-//
-//  Option C: Print / Save as PDF  (window.print())
-//            Uses the browser's native print dialog. On mobile this opens the
-//            system share sheet; the user saves as PDF from there.
-//            Zero dependencies, always works, no async download issues.
+// EXPORT SYSTEM — Clean Vector PDF Implementation
 // ══════════════════════════════════════════════════════════════════════════════
 
-// ── Export modal open/close ───────────────────────────────────────────────────
-function openExportModal() {
-    if (!lastScheduleData) {
-        showError("Generate a timetable first before exporting!");
-        return;
-    }
-    document.getElementById('exportModal').classList.remove('hidden');
-    document.getElementById('exportModal').classList.add('flex');
-}
-function closeExportModal() {
-    document.getElementById('exportModal').classList.add('hidden');
-    document.getElementById('exportModal').classList.remove('flex');
-}
-
-exportPdfBtn.addEventListener('click', openExportModal);
-
-document.getElementById('exportModalClose').addEventListener('click', closeExportModal);
-document.getElementById('exportModal').addEventListener('click', (e) => {
-    if (e.target === document.getElementById('exportModal')) closeExportModal();
-});
-
-// ── Helper: restore calendarContainer styles (used by Option A) ───────────────
-function restoreContainerStyle(container, saved) {
-    container.style.height     = saved.height;
-    container.style.width      = saved.width;
-    container.style.maxWidth   = saved.maxWidth;
-    container.style.overflowX  = saved.overflowX;
-    container.style.overflowY  = saved.overflowY;
-    container.style.transition = saved.transition;
-}
-
-// ── Helper: mobile-safe PDF download ─────────────────────────────────────────
 function savePdf(pdf, filename) {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     if (isIOS) {
@@ -314,110 +261,10 @@ function savePdf(pdf, filename) {
     }
 }
 
-// ── Option A: Screenshot → PDF ────────────────────────────────────────────────
-// Captures the live DOM as a PNG then embeds it in a landscape A4 PDF.
-// All five issues from the audit are fixed here:
-//   1. Container transition disabled before measuring so scrollWidth is accurate
-//   2. Both calendarContainer AND exportArea overflow expanded before capture
-//   3. pixelRatio capped at devicePixelRatio (max 2 on mobile) to avoid GPU limit
-//   4. tempImg.onerror handler added so the button never gets stuck disabled
-//   5. iOS uses blob URL instead of pdf.save() to stay in the gesture chain
-document.getElementById('exportOptionA').addEventListener('click', () => {
-    closeExportModal();
-
-    const originalContent = exportPdfBtn.innerHTML;
-    exportPdfBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Capturing...';
-    exportPdfBtn.disabled  = true;
-
-    const container = calendarContainer;
-    const outer     = exportArea;
-
-    // Save current inline styles for both elements
-    const savedContainer = {
-        height:     container.style.height,
-        width:      container.style.width,
-        maxWidth:   container.style.maxWidth,
-        overflowX:  container.style.overflowX,
-        overflowY:  container.style.overflowY,
-        transition: container.style.transition,
-    };
-    const savedOuter = {
-        overflowX: outer.style.overflowX,
-        overflowY: outer.style.overflowY,
-    };
-
-    // FIX: disable transition before measuring
-    container.style.transition = 'none';
-
-    // FIX: Instead of scrollWidth, force layout to look like a desktop grid container to stop viewport-truncation on mobile
-    container.style.width     = '1200px';
-    container.style.maxWidth  = 'none';
-    container.style.overflowX = 'visible';
-    container.style.overflowY = 'visible';
-    outer.style.overflowX     = 'visible';
-    outer.style.overflowY     = 'visible';
-
-    const pixelRatio = isMobile() ? Math.min(window.devicePixelRatio || 2, 2) : 3;
-
-    // 150ms settle so the layout engine reflow completes reliably before taking the canvas snapshot
-    setTimeout(() => {
-        htmlToImage.toPng(outer, {
-            quality: 1.0,
-            pixelRatio,
-            backgroundColor: '#f0f4f8',
-            fetchRequestInit: { mode: 'cors', cache: 'force-cache' },
-        })
-        .then(dataUrl => {
-            // Restore immediately after capture, before building the PDF
-            restoreContainerStyle(container, savedContainer);
-            outer.style.overflowX = savedOuter.overflowX;
-            outer.style.overflowY = savedOuter.overflowY;
-
-            const { jsPDF } = window.jspdf;
-            const pdf        = new jsPDF('l', 'mm', 'a4');
-            const pageWidth  = pdf.internal.pageSize.getWidth();
-            const pageHeight = pdf.internal.pageSize.getHeight();
-            const margin     = 10;
-            const targetW    = pageWidth - margin * 2;
-
-            const tempImg   = new Image();
-            tempImg.onerror = () => {
-                showError("Capture failed — try Option B or Option C instead.");
-                exportPdfBtn.innerHTML = originalContent;
-                exportPdfBtn.disabled  = false;
-            };
-            tempImg.onload = function () {
-                const ratio   = this.height / this.width;
-                const targetH = targetW * ratio;
-                const yPos    = Math.max(margin, (pageHeight - targetH) / 2);
-                pdf.addImage(dataUrl, 'PNG', margin, yPos, targetW, targetH, undefined, 'FAST');
-                savePdf(pdf, 'Studilux_Timetable.pdf');
-                exportPdfBtn.innerHTML = originalContent;
-                exportPdfBtn.disabled  = false;
-            };
-            tempImg.src = dataUrl;
-        })
-        .catch(err => {
-            restoreContainerStyle(container, savedContainer);
-            outer.style.overflowX = savedOuter.overflowX;
-            outer.style.overflowY = savedOuter.overflowY;
-            console.error('Option A export error:', err);
-            showError("Screenshot capture failed. Try Option B or Option C.");
-            exportPdfBtn.innerHTML = originalContent;
-            exportPdfBtn.disabled  = false;
-        });
-    }, 150);
-});
-
-// ── Option B: Programmatic PDF ────────────────────────────────────────────────
-// Reads lastScheduleData and subjects directly — no DOM screenshot, no canvas,
-// no CORS taint risk. Draws a clean timetable grid using jsPDF's drawing API.
-// Works on every browser and device without any async download issues.
-document.getElementById('exportOptionB').addEventListener('click', () => {
-    closeExportModal();
-
+// Directly execute Vector PDF conversion on click
+exportPdfBtn.addEventListener('click', () => {
     if (!lastScheduleData || !subjects.length) {
-        showError("No timetable data to export.");
+        showError("Generate a timetable first before exporting!");
         return;
     }
 
@@ -427,7 +274,6 @@ document.getElementById('exportOptionB').addEventListener('click', () => {
     const PH         = pdf.internal.pageSize.getHeight();  // 210mm
     const MARGIN     = 12;
 
-    // Colour palette (matches the app's diff-1…diff-5 theme)
     const DIFF_COLORS = {
         1: { bg: [219, 234, 254], border: [56,  189, 248], text: [12, 74, 110]  },
         2: { bg: [186, 230, 253], border: [14,  165, 233], text: [12, 74, 110]  },
@@ -436,11 +282,9 @@ document.getElementById('exportOptionB').addEventListener('click', () => {
         5: { bg: [254, 202, 202], border: [239, 68,  68 ], text: [239, 68,  68] },
     };
 
-    // Determine which days actually have sessions
     const activeDays = DAYS.filter(d => lastScheduleData[d]?.length > 0);
     if (!activeDays.length) { showError("No sessions to export."); return; }
 
-    // Determine hour range
     let minH = 24, maxH = 0;
     activeDays.forEach(d => lastScheduleData[d].forEach(e => {
         if (e.hour < minH) minH = e.hour;
@@ -448,7 +292,6 @@ document.getElementById('exportOptionB').addEventListener('click', () => {
     }));
     const numHours = maxH - minH + 1;
 
-    // Layout constants
     const TIME_COL_W  = 14;
     const usableW     = PW - MARGIN * 2 - TIME_COL_W;
     const DAY_COL_W   = usableW / activeDays.length;
@@ -458,22 +301,21 @@ document.getElementById('exportOptionB').addEventListener('click', () => {
     const gridTop     = MARGIN + HEADER_H;
     const gridLeft    = MARGIN + TIME_COL_W;
 
-    // ── Background
+    // Background
     pdf.setFillColor(240, 244, 248);
     pdf.rect(0, 0, PW, PH, 'F');
 
-    // ── Title
+    // Title
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(13);
     pdf.setTextColor(30, 58, 138);
     pdf.text('Studilux Reading Timetable', PW / 2, MARGIN - 2, { align: 'center' });
 
-    // ── Day headers
+    // Day headers
     pdf.setFontSize(7);
     pdf.setFont('helvetica', 'bold');
     activeDays.forEach((day, i) => {
         const x = gridLeft + i * DAY_COL_W;
-        // Header background
         pdf.setFillColor(255, 255, 255);
         pdf.setDrawColor(220, 230, 245);
         pdf.roundedRect(x + 1, MARGIN, DAY_COL_W - 2, HEADER_H - 1, 1.5, 1.5, 'FD');
@@ -481,17 +323,16 @@ document.getElementById('exportOptionB').addEventListener('click', () => {
         pdf.text(day.substring(0, 3).toUpperCase(), x + DAY_COL_W / 2, MARGIN + 6.5, { align: 'center' });
     });
 
-    // ── Vertical column dividers
+    // Vertical column dividers
     pdf.setDrawColor(200, 215, 235);
     pdf.setLineWidth(0.2);
     activeDays.forEach((_, i) => {
         const x = gridLeft + i * DAY_COL_W;
         pdf.line(x, gridTop, x, gridTop + usableH);
     });
-    // Right edge
     pdf.line(gridLeft + usableW, gridTop, gridLeft + usableW, gridTop + usableH);
 
-    // ── Time labels + horizontal hour lines
+    // Time labels + horizontal hour lines
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(5.5);
     pdf.setTextColor(100, 116, 139);
@@ -506,7 +347,7 @@ document.getElementById('exportOptionB').addEventListener('click', () => {
         }
     }
 
-    // ── Session blocks
+    // Session blocks
     activeDays.forEach((day, colIdx) => {
         const events = lastScheduleData[day] || [];
         events.forEach(evt => {
@@ -518,17 +359,14 @@ document.getElementById('exportOptionB').addEventListener('click', () => {
             const bw     = DAY_COL_W - 3;
             const bh     = ROW_H - 2;
 
-            // Block fill
             pdf.setFillColor(...colors.bg);
             pdf.setDrawColor(...colors.border);
             pdf.setLineWidth(0.4);
             pdf.roundedRect(x, y, bw, bh, 1.5, 1.5, 'FD');
 
-            // Left accent bar (mirrors the CSS border-left)
             pdf.setFillColor(...colors.border);
             pdf.rect(x, y, 1.5, bh, 'F');
 
-            // Subject name
             pdf.setFont('helvetica', 'bold');
             pdf.setFontSize(Math.min(6.5, bh > 6 ? 6.5 : bh * 0.55));
             pdf.setTextColor(...colors.text);
@@ -538,7 +376,6 @@ document.getElementById('exportOptionB').addEventListener('click', () => {
                 : evt.subject;
             pdf.text(nameLabel, x + 3.5, y + Math.min(bh * 0.45, 4.5));
 
-            // Time label (only if block is tall enough)
             if (bh > 7) {
                 pdf.setFont('helvetica', 'normal');
                 pdf.setFontSize(4.5);
@@ -549,7 +386,7 @@ document.getElementById('exportOptionB').addEventListener('click', () => {
         });
     });
 
-    // ── Footer
+    // Footer
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(5);
     pdf.setTextColor(148, 163, 184);
@@ -557,20 +394,6 @@ document.getElementById('exportOptionB').addEventListener('click', () => {
     pdf.text(`Generated by Studilux · ${now}`, PW / 2, PH - 4, { align: 'center' });
 
     savePdf(pdf, 'Studilux_Timetable.pdf');
-});
-
-// ── Option C: Print / Save as PDF ────────────────────────────────────────────
-// Uses the browser's native print pipeline. A dedicated @media print stylesheet
-// (in style.css) hides everything except the timetable, formats it for paper,
-// and removes all interactive UI. On mobile this opens the system share sheet
-// where the user can save as PDF — no async issues, no canvas, no dependencies.
-document.getElementById('exportOptionC').addEventListener('click', () => {
-    closeExportModal();
-    if (!lastScheduleData) {
-        showError("Generate a timetable first before printing!");
-        return;
-    }
-    window.print();
 });
 
 generateBtn.addEventListener('click', async () => {
@@ -661,13 +484,11 @@ function renderSchedule(scheduleData) {
             const subjConfig = subjects.find(s => s.name === evt.subject) || { difficulty: 1 };
 
             const block = document.createElement('div');
-            // FIX: remove cursor-grab on mobile — drag is desktop-only
             block.className = isMobile()
                 ? `schedule-block diff-${subjConfig.difficulty} fade-in`
                 : `schedule-block diff-${subjConfig.difficulty} fade-in cursor-grab active:cursor-grabbing`;
             block.style.animationDelay = `${i * 0.05}s`;
 
-            // ── Desktop drag-and-drop only ───────────────────────────────────
             if (!isMobile()) {
                 block.draggable = true;
                 block.addEventListener('dragstart', (e) => {
@@ -696,8 +517,6 @@ function renderSchedule(scheduleData) {
 }
 
 // ── Re-calculate calendar height on window resize ─────────────────────────────
-// This ensures the height is correct if the user rotates their phone or resizes
-// a browser window between mobile and desktop breakpoints.
 let resizeTimer;
 window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
@@ -711,9 +530,6 @@ window.addEventListener('resize', () => {
 loadState();
 
 // ── Mobile sticky action bar ──────────────────────────────────────────────────
-// The mobile bar duplicates the navbar buttons. Rather than duplicating the
-// full event-handler logic, we simply forward each mobile button's click to
-// the corresponding navbar button so all existing logic runs exactly once.
 const exportPdfBtnMobile = document.getElementById('exportPdfBtnMobile');
 const generateBtnMobile  = document.getElementById('generateBtnMobile');
 
