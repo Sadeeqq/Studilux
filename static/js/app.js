@@ -295,6 +295,7 @@ document.getElementById('exportModal').addEventListener('click', (e) => {
 function restoreContainerStyle(container, saved) {
     container.style.height     = saved.height;
     container.style.width      = saved.width;
+    container.style.maxWidth   = saved.maxWidth;
     container.style.overflowX  = saved.overflowX;
     container.style.overflowY  = saved.overflowY;
     container.style.transition = saved.transition;
@@ -335,6 +336,7 @@ document.getElementById('exportOptionA').addEventListener('click', () => {
     const savedContainer = {
         height:     container.style.height,
         width:      container.style.width,
+        maxWidth:   container.style.maxWidth,
         overflowX:  container.style.overflowX,
         overflowY:  container.style.overflowY,
         transition: container.style.transition,
@@ -344,12 +346,12 @@ document.getElementById('exportOptionA').addEventListener('click', () => {
         overflowY: outer.style.overflowY,
     };
 
-    // FIX: disable transition before measuring so scrollWidth is not mid-animation
+    // FIX: disable transition before measuring
     container.style.transition = 'none';
 
-    // FIX: expand both the inner calendar and the outer wrapper so nothing is clipped
-    container.style.width     = container.scrollWidth  + 'px';
-    container.style.height    = container.scrollHeight + 'px';
+    // FIX: Instead of scrollWidth, force layout to look like a desktop grid container to stop viewport-truncation on mobile
+    container.style.width     = '1200px';
+    container.style.maxWidth  = 'none';
     container.style.overflowX = 'visible';
     container.style.overflowY = 'visible';
     outer.style.overflowX     = 'visible';
@@ -357,13 +359,12 @@ document.getElementById('exportOptionA').addEventListener('click', () => {
 
     const pixelRatio = isMobile() ? Math.min(window.devicePixelRatio || 2, 2) : 3;
 
-    // 80ms settle so the reflow completes before the canvas snapshot is taken
+    // 150ms settle so the layout engine reflow completes reliably before taking the canvas snapshot
     setTimeout(() => {
         htmlToImage.toPng(outer, {
             quality: 1.0,
             pixelRatio,
             backgroundColor: '#f0f4f8',
-            // fetchRequestInit helps with CORS on fonts/icons in some browsers
             fetchRequestInit: { mode: 'cors', cache: 'force-cache' },
         })
         .then(dataUrl => {
@@ -380,7 +381,6 @@ document.getElementById('exportOptionA').addEventListener('click', () => {
             const targetW    = pageWidth - margin * 2;
 
             const tempImg   = new Image();
-            // FIX: onerror so button is never permanently stuck if image fails
             tempImg.onerror = () => {
                 showError("Capture failed — try Option B or Option C instead.");
                 exportPdfBtn.innerHTML = originalContent;
@@ -406,7 +406,7 @@ document.getElementById('exportOptionA').addEventListener('click', () => {
             exportPdfBtn.innerHTML = originalContent;
             exportPdfBtn.disabled  = false;
         });
-    }, 80);
+    }, 150);
 });
 
 // ── Option B: Programmatic PDF ────────────────────────────────────────────────
@@ -680,7 +680,7 @@ function renderSchedule(scheduleData) {
             }
 
             const positionIdx = evt.hour - minHour;
-            block.style.top    = `calc(${positionIdx} * ${blockHeightPct}% + 4px)`;
+            block.style.top = `calc(${positionIdx} * ${blockHeightPct}% + 4px)`;
             block.style.height = `calc(${blockHeightPct}% - 8px)`;
 
             block.innerHTML = `
