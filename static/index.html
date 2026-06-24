@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -56,6 +56,16 @@
                 <div>
                     <h1 class="text-2xl font-bold tracking-tight text-darkblue">Studilux</h1>
                     <p class="text-xs text-brand-500 font-bold tracking-wide uppercase">StudyBuddy+</p>
+                    <!-- Dark mode toggle — sits just below the logo text -->
+                    <button id="darkModeToggle" aria-label="Toggle dark mode"
+                        class="mt-1.5 flex items-center gap-1.5 group focus:outline-none">
+                        <!-- Track -->
+                        <div id="dmTrack" class="relative w-9 h-5 rounded-full transition-all duration-300 dm-track">
+                            <!-- Thumb -->
+                            <div id="dmThumb" class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full shadow transition-all duration-300 dm-thumb"></div>
+                        </div>
+                        <span id="dmLabel" class="text-[0.6rem] font-bold uppercase tracking-widest dm-label">Light</span>
+                    </button>
                 </div>
             </div>
             <div class="flex space-x-3">

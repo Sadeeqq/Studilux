@@ -526,6 +526,34 @@ window.addEventListener('resize', () => {
     }, 150);
 }, { passive: true });
 
+// ── Dark mode ────────────────────────────────────────────────────────────────
+// Reads the saved preference from localStorage on load, then toggles the
+// data-theme attribute on <html> when the button is clicked.
+// The CSS does all the visual work via custom property overrides.
+(function initDarkMode() {
+    const html    = document.documentElement;
+    const toggle  = document.getElementById('darkModeToggle');
+    const label   = document.getElementById('dmLabel');
+    const STORAGE = 'studilux_theme';
+
+    function applyTheme(theme) {
+        html.setAttribute('data-theme', theme);
+        if (label) label.textContent = theme === 'dark' ? 'Dark' : 'Light';
+        try { localStorage.setItem(STORAGE, theme); } catch (_) {}
+    }
+
+    // Restore saved preference, fall back to light
+    const saved = (() => { try { return localStorage.getItem(STORAGE); } catch(_) { return null; } })();
+    applyTheme(saved === 'dark' ? 'dark' : 'light');
+
+    if (toggle) {
+        toggle.addEventListener('click', () => {
+            const current = html.getAttribute('data-theme');
+            applyTheme(current === 'dark' ? 'light' : 'dark');
+        });
+    }
+})();
+
 // ── Initial setup ─────────────────────────────────────────────────────────────
 loadState();
 
