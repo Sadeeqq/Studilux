@@ -526,7 +526,7 @@ window.addEventListener('resize', () => {
     }, 150);
 }, { passive: true });
 
-// ── Theme selector (Light / Dark / Cafe Brown) ────────────────────────────────
+// ── Theme selector (Light / Dark / Cafe Brown / Neon Purple / Aqua Marine) ────
 (function initTheme() {
     const html   = document.documentElement;
     const select = document.getElementById('themeSelect');
@@ -539,7 +539,7 @@ window.addEventListener('resize', () => {
     }
 
     const saved = (() => { try { return localStorage.getItem(KEY); } catch (_) { return null; } })();
-    applyTheme(['light','dark','cafe'].includes(saved) ? saved : 'light');
+    applyTheme(['light','dark','cafe','neon','aqua'].includes(saved) ? saved : 'light');
 
     if (select) {
         select.addEventListener('change', () => applyTheme(select.value));

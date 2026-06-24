@@ -569,6 +569,86 @@
     --dm-label:        #8a6040;
 }
 
+/* ── Aqua Marine tokens ── */
+[data-theme="aqua"] {
+    --bg-page:         #0d2b26;
+    --bg-header:       rgba(10,38,32,0.95);
+    --bg-sidebar:      rgba(12,34,28,0.90);
+    --bg-card:         rgba(16,48,40,0.85);
+    --bg-input:        rgba(20,58,48,0.90);
+    --bg-calendar:     rgba(10,36,30,0.85);
+    --bg-time-col:     rgba(12,40,34,0.95);
+    --bg-day-header:   rgba(14,44,36,0.95);
+    --bg-loading:      rgba(8,28,22,0.85);
+    --bg-modal:        rgba(14,44,36,0.98);
+    --bg-mobile-bar:   rgba(12,40,34,0.95);
+    --bg-mob-export:   rgba(18,52,44,0.80);
+
+    --border-glass:    rgba(52,211,153,0.18);
+    --border-grid:     rgba(52,211,153,0.08);
+    --border-slot:     rgba(52,211,153,0.06);
+
+    --text-primary:    #6ee7b7;
+    --text-secondary:  #34a07a;
+    --text-muted:      #1e6a50;
+    --text-time:       #2a8060;
+    --text-day-hdr:    #4cd4a0;
+
+    --grid-dot:        rgba(52,211,153,0.06);
+
+    --shadow-block:    0 4px 15px -3px rgba(0,120,80,0.25), inset 0 1px 0 rgba(100,255,180,0.10);
+    --shadow-hover:    0 12px 25px -5px rgba(0,140,90,0.38), inset 0 1px 0 rgba(100,255,180,0.18);
+
+    --blocked-bg:      rgba(20,90,65,0.22);
+    --blocked-border:  rgba(40,140,100,0.30);
+
+    --error-bg:        rgba(50,10,10,0.95);
+    --error-border:    rgba(200,50,60,0.50);
+    --error-text:      #ff7080;
+
+    --dm-label:        #3db88a;
+}
+
+/* ── Neon Purple tokens ── */
+[data-theme="neon"] {
+    --bg-page:         #1a0a2e;
+    --bg-header:       rgba(36,14,58,0.95);
+    --bg-sidebar:      rgba(30,10,50,0.90);
+    --bg-card:         rgba(48,18,72,0.85);
+    --bg-input:        rgba(58,22,88,0.90);
+    --bg-calendar:     rgba(28,8,48,0.85);
+    --bg-time-col:     rgba(32,10,54,0.95);
+    --bg-day-header:   rgba(40,12,64,0.95);
+    --bg-loading:      rgba(20,6,38,0.85);
+    --bg-modal:        rgba(38,14,62,0.98);
+    --bg-mobile-bar:   rgba(32,10,54,0.95);
+    --bg-mob-export:   rgba(48,18,72,0.80);
+
+    --border-glass:    rgba(200,80,255,0.18);
+    --border-grid:     rgba(180,60,240,0.08);
+    --border-slot:     rgba(180,60,240,0.06);
+
+    --text-primary:    #f0a8ff;
+    --text-secondary:  #a060c8;
+    --text-muted:      #6030a0;
+    --text-time:       #8040b8;
+    --text-day-hdr:    #e060ff;
+
+    --grid-dot:        rgba(200,80,255,0.06);
+
+    --shadow-block:    0 4px 15px -3px rgba(180,0,255,0.25), inset 0 1px 0 rgba(255,160,255,0.10);
+    --shadow-hover:    0 12px 25px -5px rgba(180,0,255,0.40), inset 0 1px 0 rgba(255,160,255,0.18);
+
+    --blocked-bg:      rgba(120,40,180,0.18);
+    --blocked-border:  rgba(160,60,220,0.28);
+
+    --error-bg:        rgba(60,10,20,0.95);
+    --error-border:    rgba(220,50,80,0.50);
+    --error-text:      #ff7090;
+
+    --dm-label:        #c060e8;
+}
+
 /* ── Dark tokens ── */
 [data-theme="dark"] {
     --bg-page:         #141414;
@@ -702,6 +782,20 @@ aside h2      { color: var(--text-secondary) !important; }
 [data-theme="cafe"] .diff-3 { background-color:rgba(160,120,80,0.35)  !important; border-color:rgba(140,100,55,0.35)  !important; border-left-color:#7a5020 !important; color:#fff8ee !important; }
 [data-theme="cafe"] .diff-4 { background-color:rgba(130,88,50,0.38)   !important; border-color:rgba(110,70,30,0.35)   !important; border-left-color:#6a3810 !important; color:#fff0d8 !important; }
 [data-theme="cafe"] .diff-5 { background-color:rgba(180,70,50,0.28)   !important; border-color:rgba(180,70,50,0.30)   !important; border-left-color:#a03820 !important; color:#a03820 !important; }
+
+/* Neon Purple block colours */
+[data-theme="neon"] .diff-1 { background-color:rgba(100,30,160,0.45)  !important; border-color:rgba(180,80,255,0.30)  !important; border-left-color:#c040ff !important; color:#f0a8ff !important; }
+[data-theme="neon"] .diff-2 { background-color:rgba(120,20,180,0.45)  !important; border-color:rgba(200,60,255,0.30)  !important; border-left-color:#d030ff !important; color:#f8b0ff !important; }
+[data-theme="neon"] .diff-3 { background-color:rgba(140,10,200,0.40)  !important; border-color:rgba(220,40,255,0.28)  !important; border-left-color:#dd20ff !important; color:#ffd0ff !important; }
+[data-theme="neon"] .diff-4 { background-color:rgba(160,0,200,0.38)   !important; border-color:rgba(240,0,255,0.25)   !important; border-left-color:#e800ff !important; color:#ffe0ff !important; }
+[data-theme="neon"] .diff-5 { background-color:rgba(200,0,100,0.38)   !important; border-color:rgba(255,20,120,0.30)  !important; border-left-color:#ff1478 !important; color:#ff80b8 !important; }
+
+/* Aqua Marine block colours */
+[data-theme="aqua"] .diff-1 { background-color:rgba(20,100,72,0.45)   !important; border-color:rgba(52,211,153,0.28)  !important; border-left-color:#22c98a !important; color:#6ee7b7 !important; }
+[data-theme="aqua"] .diff-2 { background-color:rgba(16,118,82,0.42)   !important; border-color:rgba(40,190,130,0.28)  !important; border-left-color:#18b878 !important; color:#86efca !important; }
+[data-theme="aqua"] .diff-3 { background-color:rgba(10,130,88,0.38)   !important; border-color:rgba(30,170,110,0.26)  !important; border-left-color:#10a868 !important; color:#a7f3d0 !important; }
+[data-theme="aqua"] .diff-4 { background-color:rgba(6,100,68,0.42)    !important; border-color:rgba(20,150,95,0.25)   !important; border-left-color:#0a9058 !important; color:#c8f8e4 !important; }
+[data-theme="aqua"] .diff-5 { background-color:rgba(180,60,40,0.32)   !important; border-color:rgba(220,80,50,0.28)   !important; border-left-color:#cc4428 !important; color:#fca08a !important; }
 
 /* ── Theme select dropdown ── */
 #themeSelect {
