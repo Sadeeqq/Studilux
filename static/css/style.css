@@ -428,7 +428,7 @@
         height: auto !important;
         padding: 8mm !important;
         overflow: visible !important;
-        background: #f0f4f8 !important;
+        background: var(--bg-page, #f0f4f8) !important;
     }
 
     /* Force the calendar container to show all columns */
@@ -661,15 +661,26 @@ aside h2.text-slate-500      { color: var(--text-secondary) !important; }
 aside > div > p              { color: var(--text-muted) !important; }
 
 /* ── Main area & calendar ── */
-main                         { background: transparent !important; }
+/* FIX: body has Tailwind's bg-ash class which generates a specific rule that
+   beats a plain 'body { background-color }' declaration. We must also target
+   the html element and use !important to beat Tailwind's specificity.       */
+html, body                   { background-color: var(--bg-page) !important; }
+main                         { background-color: var(--bg-page) !important; }
 
-/* Export area title */
+/* Export area — was inheriting the Tailwind ash background with no override */
+#exportArea                  { background-color: var(--bg-page) !important; }
+
+/* Export area text */
 #exportArea > h2             { color: var(--text-primary) !important; }
 #exportArea > p              { color: var(--text-secondary) !important; }
 #exportArea > p span         { color: var(--text-primary) !important; }
 
-/* Calendar container */
+/* Calendar container — bg-white/40 Tailwind class needs beating */
 #calendarContainer           { background: var(--bg-calendar) !important; border-color: var(--border-glass) !important; }
+
+/* The workspace row that wraps sidebar + main also has a bg in some cases */
+.flex.flex-col.sm\:flex-row.flex-1,
+.flex-1.overflow-x-auto      { background-color: var(--bg-page) !important; }
 
 /* Time column */
 #timeColumn                  { background: var(--bg-time-col) !important; border-color: var(--border-glass) !important; }
