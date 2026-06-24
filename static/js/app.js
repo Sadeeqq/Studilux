@@ -100,7 +100,7 @@ function initGrid(minHour = 0, maxHour = 23, usedDays = DAYS) {
     // ── Time Column ──────────────────────────────────────────────────────────
     timeColumn.innerHTML = '';
     const timeSpacer = document.createElement('div');
-    timeSpacer.className = 'h-[45px] w-full shrink-0 border-b border-glassborder bg-white/60 backdrop-blur-xl z-30';
+    timeSpacer.className = 'h-[45px] w-full shrink-0 border-b border-glassborder dm-day-header backdrop-blur-xl z-30';
     timeColumn.appendChild(timeSpacer);
 
     const timeGridBody = document.createElement('div');
@@ -121,7 +121,7 @@ function initGrid(minHour = 0, maxHour = 23, usedDays = DAYS) {
         dayDiv.id = `col-${day}`;
 
         const header = document.createElement('div');
-        header.className = 'w-full text-center py-3.5 bg-white/60 backdrop-blur-xl border-b border-glassborder z-30 font-bold tracking-widest text-darkblue text-xs uppercase shadow-sm h-[45px] flex items-center justify-center shrink-0 cursor-default';
+        header.className = 'w-full text-center py-3.5 dm-day-header backdrop-blur-xl border-b border-glassborder z-30 font-bold tracking-widest dm-day-header-text text-xs uppercase shadow-sm h-[45px] flex items-center justify-center shrink-0 cursor-default';
         header.innerText = day;
         dayDiv.appendChild(header);
 
@@ -526,30 +526,25 @@ window.addEventListener('resize', () => {
     }, 150);
 }, { passive: true });
 
-// ── Dark mode ────────────────────────────────────────────────────────────────
-// Reads the saved preference from localStorage on load, then toggles the
-// data-theme attribute on <html> when the button is clicked.
-// The CSS does all the visual work via custom property overrides.
+// ── Dark mode ─────────────────────────────────────────────────────────────────
 (function initDarkMode() {
-    const html    = document.documentElement;
-    const toggle  = document.getElementById('darkModeToggle');
-    const label   = document.getElementById('dmLabel');
-    const STORAGE = 'studilux_theme';
+    const html   = document.documentElement;
+    const toggle = document.getElementById('darkModeToggle');
+    const label  = document.getElementById('dmLabel');
+    const KEY    = 'studilux_theme';
 
     function applyTheme(theme) {
         html.setAttribute('data-theme', theme);
         if (label) label.textContent = theme === 'dark' ? 'Dark' : 'Light';
-        try { localStorage.setItem(STORAGE, theme); } catch (_) {}
+        try { localStorage.setItem(KEY, theme); } catch (_) {}
     }
 
-    // Restore saved preference, fall back to light
-    const saved = (() => { try { return localStorage.getItem(STORAGE); } catch(_) { return null; } })();
+    const saved = (() => { try { return localStorage.getItem(KEY); } catch (_) { return null; } })();
     applyTheme(saved === 'dark' ? 'dark' : 'light');
 
     if (toggle) {
         toggle.addEventListener('click', () => {
-            const current = html.getAttribute('data-theme');
-            applyTheme(current === 'dark' ? 'light' : 'dark');
+            applyTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
         });
     }
 })();

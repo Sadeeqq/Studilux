@@ -428,7 +428,7 @@
         height: auto !important;
         padding: 8mm !important;
         overflow: visible !important;
-        background: var(--bg-page, #f0f4f8) !important;
+        background: #f0f4f8 !important;
     }
 
     /* Force the calendar container to show all columns */
@@ -480,285 +480,226 @@
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
-   DARK MODE
-   Strategy: CSS custom properties defined on :root (light) and overridden on
-   [data-theme="dark"]. Every colour in the UI reads from these variables.
-   The toggle in JS sets data-theme="dark" / "light" on <html> and saves the
-   preference to localStorage.
-
-   Dark palette: nude/warm black base (#141414), surfaces in dark charcoal
-   (#1c1c1e, #242428), muted slate borders, and dimmed versions of the brand
-   blues so the glassmorphism feel is preserved without eye strain.
+   DARK MODE — CSS custom property system
+   Toggle sets data-theme="dark" on <html>. Every colour reads from a token.
+   Hardcoded Tailwind bg- classes have been removed from the HTML and JS so
+   CSS variables have clean control with no specificity fight.
    ══════════════════════════════════════════════════════════════════════════════ */
 
-/* ── Light mode tokens (default) ── */
+/* ── Light tokens (:root = always applied) ── */
 :root {
-    --bg-page:          #f0f4f8;
-    --bg-header:        rgba(255,255,255,0.60);
-    --bg-sidebar:       rgba(255,255,255,0.40);
-    --bg-card:          rgba(255,255,255,0.50);
-    --bg-input:         rgba(255,255,255,0.70);
-    --bg-calendar:      rgba(255,255,255,0.40);
-    --bg-time-col:      rgba(255,255,255,0.60);
-    --bg-day-header:    rgba(255,255,255,0.60);
-    --bg-loading:       rgba(255,255,255,0.60);
-    --bg-modal:         rgba(255,255,255,0.90);
-    --bg-mobile-bar:    rgba(255,255,255,0.75);
-    --bg-mobile-export: rgba(255,255,255,0.50);
+    --bg-page:         #f0f4f8;
+    --bg-header:       rgba(255,255,255,0.60);
+    --bg-sidebar:      rgba(255,255,255,0.40);
+    --bg-card:         rgba(255,255,255,0.50);
+    --bg-input:        rgba(255,255,255,0.70);
+    --bg-calendar:     rgba(255,255,255,0.40);
+    --bg-time-col:     rgba(255,255,255,0.60);
+    --bg-day-header:   rgba(255,255,255,0.60);
+    --bg-loading:      rgba(255,255,255,0.60);
+    --bg-modal:        rgba(255,255,255,0.90);
+    --bg-mobile-bar:   rgba(255,255,255,0.75);
+    --bg-mob-export:   rgba(255,255,255,0.50);
 
-    --border-glass:     rgba(255,255,255,0.60);
-    --border-subtle:    rgba(30,58,138,0.06);
-    --border-hr:        rgba(255,255,255,0.60);
+    --border-glass:    rgba(255,255,255,0.60);
+    --border-grid:     rgba(30,58,138,0.06);
+    --border-slot:     rgba(30,58,138,0.05);
 
-    --text-primary:     #1e3a8a;
-    --text-secondary:   #64748b;
-    --text-muted:       #94a3b8;
-    --text-time:        #64748b;
-    --text-day-header:  #1e3a8a;
+    --text-primary:    #1e3a8a;
+    --text-secondary:  #64748b;
+    --text-muted:      #94a3b8;
+    --text-time:       #64748b;
+    --text-day-hdr:    #1e3a8a;
 
-    --grid-dot:         rgba(30,58,138,0.04);
-    --grid-line:        rgba(30,58,138,0.05);
-    --grid-col-div:     rgba(30,58,138,0.06);
+    --grid-dot:        rgba(30,58,138,0.04);
 
-    --shadow-block:     0 4px 15px -3px rgba(30,58,138,0.10);
-    --shadow-block-hover: 0 12px 25px -5px rgba(30,58,138,0.20);
-    --shadow-inset:     inset 0 1px 0 rgba(255,255,255,0.70);
-    --shadow-inset-hover: inset 0 1px 0 rgba(255,255,255,0.90);
+    --shadow-block:    0 4px 15px -3px rgba(30,58,138,0.10), inset 0 1px 0 rgba(255,255,255,0.70);
+    --shadow-hover:    0 12px 25px -5px rgba(30,58,138,0.20), inset 0 1px 0 rgba(255,255,255,0.90);
 
-    --blocked-bg:       rgba(148,163,184,0.20);
-    --blocked-stripe:   rgba(148,163,184,0.08);
-    --blocked-border:   rgba(148,163,184,0.30);
+    --blocked-bg:      rgba(148,163,184,0.20);
+    --blocked-border:  rgba(148,163,184,0.30);
 
-    --ambient-top:      rgba(56,189,248,0.30);
-    --ambient-bottom:   rgba(30,58,138,0.10);
+    --error-bg:        rgba(254,226,226,0.90);
+    --error-border:    #fecaca;
+    --error-text:      #b91c1c;
 
-    /* Toggle */
-    --dm-track-bg:      rgba(30,58,138,0.12);
-    --dm-thumb-bg:      #94a3b8;
-    --dm-label-color:   #64748b;
-
-    /* Error banner */
-    --error-bg:         rgba(254,226,226,0.90);
-    --error-border:     #fecaca;
-    --error-text:       #b91c1c;
-
-    /* Scrollbar */
-    --scrollbar-thumb:  rgba(30,58,138,0.10);
-    --scrollbar-hover:  rgba(30,58,138,0.20);
+    --dm-track:        rgba(30,58,138,0.12);
+    --dm-thumb:        #94a3b8;
+    --dm-label:        #64748b;
+    --dm-thumb-x:      0px;
 }
 
-/* ── Dark mode tokens ── */
+/* ── Dark tokens ── */
 [data-theme="dark"] {
-    --bg-page:          #141414;
-    --bg-header:        rgba(22,22,24,0.85);
-    --bg-sidebar:       rgba(26,26,30,0.80);
-    --bg-card:          rgba(32,32,38,0.80);
-    --bg-input:         rgba(36,36,42,0.90);
-    --bg-calendar:      rgba(24,24,28,0.70);
-    --bg-time-col:      rgba(20,20,24,0.80);
-    --bg-day-header:    rgba(22,22,26,0.85);
-    --bg-loading:       rgba(18,18,22,0.75);
-    --bg-modal:         rgba(26,26,32,0.96);
-    --bg-mobile-bar:    rgba(20,20,24,0.90);
-    --bg-mobile-export: rgba(32,32,40,0.70);
+    --bg-page:         #141414;
+    --bg-header:       rgba(18,18,20,0.90);
+    --bg-sidebar:      rgba(22,22,26,0.85);
+    --bg-card:         rgba(28,28,34,0.85);
+    --bg-input:        rgba(34,34,42,0.90);
+    --bg-calendar:     rgba(20,20,24,0.80);
+    --bg-time-col:     rgba(18,18,22,0.90);
+    --bg-day-header:   rgba(22,22,28,0.90);
+    --bg-loading:      rgba(14,14,18,0.80);
+    --bg-modal:        rgba(22,22,28,0.97);
+    --bg-mobile-bar:   rgba(18,18,22,0.92);
+    --bg-mob-export:   rgba(28,28,36,0.75);
 
-    --border-glass:     rgba(255,255,255,0.07);
-    --border-subtle:    rgba(255,255,255,0.04);
-    --border-hr:        rgba(255,255,255,0.07);
+    --border-glass:    rgba(255,255,255,0.07);
+    --border-grid:     rgba(255,255,255,0.04);
+    --border-slot:     rgba(255,255,255,0.04);
 
-    --text-primary:     #c8d6f0;
-    --text-secondary:   #7a8fa8;
-    --text-muted:       #4a5a6a;
-    --text-time:        #5a7090;
-    --text-day-header:  #a0b8d8;
+    --text-primary:    #c8d6f0;
+    --text-secondary:  #6a8090;
+    --text-muted:      #3a4a58;
+    --text-time:       #4a6070;
+    --text-day-hdr:    #90b0cc;
 
-    --grid-dot:         rgba(160,184,216,0.04);
-    --grid-line:        rgba(255,255,255,0.04);
-    --grid-col-div:     rgba(255,255,255,0.04);
+    --grid-dot:        rgba(160,184,216,0.04);
 
-    --shadow-block:     0 4px 15px -3px rgba(0,0,0,0.40);
-    --shadow-block-hover: 0 12px 25px -5px rgba(0,0,0,0.55);
-    --shadow-inset:     inset 0 1px 0 rgba(255,255,255,0.06);
-    --shadow-inset-hover: inset 0 1px 0 rgba(255,255,255,0.10);
+    --shadow-block:    0 4px 15px -3px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05);
+    --shadow-hover:    0 12px 25px -5px rgba(0,0,0,0.60), inset 0 1px 0 rgba(255,255,255,0.08);
 
-    --blocked-bg:       rgba(80,90,110,0.18);
-    --blocked-stripe:   rgba(80,90,110,0.07);
-    --blocked-border:   rgba(80,90,110,0.25);
+    --blocked-bg:      rgba(60,70,90,0.20);
+    --blocked-border:  rgba(80,90,110,0.30);
 
-    --ambient-top:      rgba(14,165,233,0.08);
-    --ambient-bottom:   rgba(30,58,138,0.06);
+    --error-bg:        rgba(50,15,15,0.92);
+    --error-border:    rgba(120,30,30,0.50);
+    --error-text:      #f87171;
 
-    /* Toggle — glows sky when active */
-    --dm-track-bg:      #0ea5e9;
-    --dm-thumb-bg:      #ffffff;
-    --dm-label-color:   #7ab8d8;
-
-    /* Error banner */
-    --error-bg:         rgba(60,20,20,0.90);
-    --error-border:     rgba(120,40,40,0.50);
-    --error-text:       #f87171;
-
-    /* Scrollbar */
-    --scrollbar-thumb:  rgba(160,184,216,0.10);
-    --scrollbar-hover:  rgba(160,184,216,0.20);
+    --dm-track:        #0ea5e9;
+    --dm-thumb:        #ffffff;
+    --dm-label:        #60a0c0;
+    --dm-thumb-x:      16px;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
-   APPLY TOKENS — every element that has a colour reads from a CSS variable.
-   These rules sit outside any media query so they apply on all screen sizes.
+   TOKEN APPLICATION — reads from CSS variables, no Tailwind bg- classes here
    ══════════════════════════════════════════════════════════════════════════════ */
 
-/* ── Page background ── */
-body                         { background-color: var(--bg-page); color: var(--text-primary); transition: background-color 0.3s, color 0.3s; }
+/* Page + body */
+html, body    { background-color: var(--bg-page) !important;
+                color: var(--text-primary);
+                transition: background-color 0.3s ease, color 0.3s ease; }
 
-/* ── Ambient gradients ── */
-body .absolute.-top-\[20\%\] { background-color: var(--ambient-top) !important; }
-body .absolute.top-\[60\%\]  { background-color: var(--ambient-bottom) !important; }
+/* Main content column */
+main          { background-color: var(--bg-page) !important; }
 
-/* ── Header / Navbar ── */
-header                       { background: var(--bg-header) !important; border-color: var(--border-glass) !important; }
-header h1                    { color: var(--text-primary) !important; }
-header p.text-brand-500      { color: #38bdf8 !important; }
+/* Export / calendar wrapper */
+#exportArea   { background-color: var(--bg-page) !important; }
+#exportArea > h2 { color: var(--text-primary) !important; }
+#exportArea > p  { color: var(--text-secondary) !important; }
+#exportArea > p span { color: var(--text-primary) !important; }
 
-/* ── Navbar buttons ── */
+/* Header */
+header        { background: var(--bg-header) !important;
+                border-color: var(--border-glass) !important; }
+header h1     { color: var(--text-primary) !important; }
+
+/* Navbar buttons */
 #exportPdfBtn,
-#generateBtn                 { background: var(--bg-card) !important; border-color: var(--border-glass) !important; color: var(--text-primary) !important; }
-#exportPdfBtn:hover,
-#generateBtn:hover           { background: var(--bg-input) !important; }
+#generateBtn  { background: var(--bg-card) !important;
+                border-color: var(--border-glass) !important;
+                color: var(--text-primary) !important; }
 
-/* ── Dark mode toggle button ── */
-.dm-track                    { background-color: var(--dm-track-bg); }
-.dm-thumb                    { background-color: var(--dm-thumb-bg); }
-[data-theme="dark"] .dm-thumb { transform: translateX(16px); }
-.dm-label                    { color: var(--dm-label-color); }
-
-/* ── Sidebar ── */
-aside                        { background: var(--bg-sidebar) !important; border-color: var(--border-glass) !important; }
-aside .h-px                  { background-color: var(--border-hr) !important; }
-
-/* Section headings */
-aside h2.text-slate-500      { color: var(--text-secondary) !important; }
+/* Sidebar */
+aside         { background: var(--bg-sidebar) !important;
+                border-color: var(--border-glass) !important; }
+aside .h-px   { background-color: var(--border-glass) !important; }
+aside h2      { color: var(--text-secondary) !important; }
 
 /* Subject cards */
-#subjectsList > div          { background: var(--bg-card) !important; border-color: var(--border-glass) !important; }
-#subjectsList p.text-darkblue { color: var(--text-primary) !important; }
+#subjectsList > div { background: var(--bg-card) !important;
+                      border-color: var(--border-glass) !important; }
+#subjectsList p   { color: var(--text-primary) !important; }
 #subjectsList span.text-slate-500 { color: var(--text-secondary) !important; }
 
-/* Subject form */
-#subjectForm,
-#freeTimeForm,
-#studyDaysForm               { background: var(--bg-card) !important; border-color: var(--border-glass) !important; }
+/* Forms + inputs */
+#subjectForm, #freeTimeForm,
+#studyDaysForm { background: var(--bg-card) !important;
+                 border-color: var(--border-glass) !important; }
 #subjectForm input,
-#freeTimeForm input          { background: var(--bg-input) !important; color: var(--text-primary) !important; border-color: var(--border-glass) !important; }
+#freeTimeForm input { background: var(--bg-input) !important;
+                      color: var(--text-primary) !important;
+                      border-color: var(--border-glass) !important; }
 #subjectForm input::placeholder { color: var(--text-muted) !important; }
 #subjectForm label,
-#freeTimeForm label          { color: var(--text-secondary) !important; }
+#freeTimeForm label { color: var(--text-secondary) !important; }
+#daysCheckboxes span { color: var(--text-secondary) !important; }
 
-/* Days checkboxes */
-#daysCheckboxes span         { color: var(--text-secondary) !important; }
+/* Calendar container — bg-white/40 class removed from HTML, now CSS-only */
+#calendarContainer { background: var(--bg-calendar) !important;
+                     border-color: var(--border-glass) !important; }
 
-/* Peak hours tip text */
-aside > div > p              { color: var(--text-muted) !important; }
+/* Time column — bg-white/60 class removed from HTML, now CSS-only */
+#timeColumn   { background: var(--bg-time-col) !important;
+                border-color: var(--border-glass) !important; }
+.time-slot    { border-bottom-color: var(--border-slot) !important; }
+.time-slot span { color: var(--text-time) !important; }
 
-/* ── Main area & calendar ── */
-/* FIX: body has Tailwind's bg-ash class which generates a specific rule that
-   beats a plain 'body { background-color }' declaration. We must also target
-   the html element and use !important to beat Tailwind's specificity.       */
-html, body                   { background-color: var(--bg-page) !important; }
-main                         { background-color: var(--bg-page) !important; }
+/* JS-injected day headers and time spacer use .dm-day-header class */
+.dm-day-header      { background: var(--bg-day-header) !important;
+                      border-color: var(--border-glass) !important; }
+.dm-day-header-text { color: var(--text-day-hdr) !important; }
 
-/* Export area — was inheriting the Tailwind ash background with no override */
-#exportArea                  { background-color: var(--bg-page) !important; }
+/* Day column grid dots */
+.day-column   { border-right-color: var(--border-grid) !important;
+                background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px) !important; }
 
-/* Export area text */
-#exportArea > h2             { color: var(--text-primary) !important; }
-#exportArea > p              { color: var(--text-secondary) !important; }
-#exportArea > p span         { color: var(--text-primary) !important; }
+/* Schedule blocks */
+.schedule-block       { box-shadow: var(--shadow-block) !important; }
+.schedule-block:hover { box-shadow: var(--shadow-hover) !important; }
 
-/* Calendar container — bg-white/40 Tailwind class needs beating */
-#calendarContainer           { background: var(--bg-calendar) !important; border-color: var(--border-glass) !important; }
+/* Dimmed block colours in dark mode */
+[data-theme="dark"] .diff-1 { background-color:rgba(20,80,120,0.40)  !important; border-color:rgba(56,189,248,0.20) !important; border-left-color:#1e6a90 !important; color:#90c8e0 !important; }
+[data-theme="dark"] .diff-2 { background-color:rgba(10,70,110,0.40)  !important; border-color:rgba(14,165,233,0.20) !important; border-left-color:#125a80 !important; color:#80b8d8 !important; }
+[data-theme="dark"] .diff-3 { background-color:rgba(5,55,95,0.40)    !important; border-color:rgba(2,132,199,0.20)  !important; border-left-color:#0a4a70 !important; color:#b8daf0 !important; }
+[data-theme="dark"] .diff-4 { background-color:rgba(15,30,80,0.45)   !important; border-color:rgba(30,58,138,0.25)  !important; border-left-color:#162868 !important; color:#90aad0 !important; }
+[data-theme="dark"] .diff-5 { background-color:rgba(90,15,15,0.40)   !important; border-color:rgba(239,68,68,0.20)  !important; border-left-color:#701010 !important; color:#e07070 !important; }
 
-/* The workspace row that wraps sidebar + main also has a bg in some cases */
-.flex.flex-col.sm\:flex-row.flex-1,
-.flex-1.overflow-x-auto      { background-color: var(--bg-page) !important; }
+/* Blocked slots */
+.blocked-slot { background-color: var(--blocked-bg) !important;
+                border-color: var(--blocked-border) !important; }
 
-/* Time column */
-#timeColumn                  { background: var(--bg-time-col) !important; border-color: var(--border-glass) !important; }
-.time-slot                   { border-color: var(--grid-line) !important; }
-.time-slot span              { color: var(--text-time) !important; }
+/* Loading overlay */
+#loadingOverlay { background: var(--bg-loading) !important; }
+#loadingOverlay p { color: var(--text-primary) !important; }
 
-/* Time column spacer */
-#timeColumn > div:first-child { background: var(--bg-day-header) !important; border-color: var(--border-glass) !important; }
+/* Error banner */
+#errorBanner  { background: var(--error-bg) !important;
+                border-color: var(--error-border) !important; }
+#errorMsg, #errorBanner i.fa-circle-exclamation { color: var(--error-text) !important; }
 
-/* Day headers */
-.day-column > div:first-child { background: var(--bg-day-header) !important; border-color: var(--border-glass) !important; color: var(--text-day-header) !important; }
+/* Export modal */
+#exportModal > div     { background: var(--bg-modal) !important;
+                         border-color: var(--border-glass) !important; }
+#exportModal h3        { color: var(--text-primary) !important; }
+#exportModal p         { color: var(--text-secondary) !important; }
+#exportModal .rounded-2xl { background: var(--bg-card) !important;
+                            border-color: var(--border-glass) !important; }
+#exportModal p.font-bold  { color: var(--text-primary) !important; }
+#exportModalClose      { background: var(--bg-card) !important;
+                         color: var(--text-muted) !important; }
 
-/* Day column grid */
-.day-column                  { border-color: var(--grid-col-div) !important; background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px) !important; }
+/* Mobile sticky bar */
+#mobileActionBar { background: var(--bg-mobile-bar) !important;
+                   border-top-color: var(--border-glass) !important; }
+#mobileActionBar #exportPdfBtnMobile { background: var(--bg-mob-export) !important;
+                                       border-color: var(--border-glass) !important;
+                                       color: var(--text-primary) !important; }
 
-/* ── Schedule blocks — dimmed in dark mode ── */
-.schedule-block              { box-shadow: var(--shadow-block), var(--shadow-inset) !important; }
-.schedule-block:hover        { box-shadow: var(--shadow-block-hover), var(--shadow-inset-hover) !important; }
+/* Dark mode toggle */
+.dm-track  { background-color: var(--dm-track) !important; }
+.dm-thumb  { background-color: var(--dm-thumb) !important;
+             transform: translateX(var(--dm-thumb-x)) !important; }
+.dm-label  { color: var(--dm-label) !important; }
 
-[data-theme="dark"] .diff-1  { background-color:rgba(30,100,140,0.35) !important; border-color:rgba(56,189,248,0.25) !important; border-left-color:#2a7fa0 !important; color:#a8d4e8 !important; }
-[data-theme="dark"] .diff-2  { background-color:rgba(10,90,130,0.35) !important; border-color:rgba(14,165,233,0.25) !important; border-left-color:#1a6a90 !important; color:#90c0dc !important; }
-[data-theme="dark"] .diff-3  { background-color:rgba(5,70,110,0.35)  !important; border-color:rgba(2,132,199,0.25)  !important; border-left-color:#0f5a80 !important; color:#c8e4f4 !important; }
-[data-theme="dark"] .diff-4  { background-color:rgba(20,40,90,0.40)  !important; border-color:rgba(30,58,138,0.30)  !important; border-left-color:#1e3a8a !important; color:#a0b8d8 !important; }
-[data-theme="dark"] .diff-5  { background-color:rgba(100,20,20,0.35) !important; border-color:rgba(239,68,68,0.25)  !important; border-left-color:#8b2020 !important; color:#f08080 !important; }
-
-/* ── Blocked slots ── */
-.blocked-slot                { background-color: var(--blocked-bg) !important; border-color: var(--blocked-border) !important; }
-.blocked-slot:hover          { background-color: var(--blocked-bg) !important; filter: brightness(1.15); }
-
-/* ── Loading overlay ── */
-#loadingOverlay              { background: var(--bg-loading) !important; }
-#loadingOverlay p.text-darkblue { color: var(--text-primary) !important; }
-
-/* ── Error banner ── */
-#errorBanner                 { background: var(--error-bg) !important; border-color: var(--error-border) !important; }
-#errorMsg,
-#errorBanner i               { color: var(--error-text) !important; }
-
-/* ── Export modal ── */
-#exportModal > div           { background: var(--bg-modal) !important; border-color: var(--border-glass) !important; }
-#exportModal h3              { color: var(--text-primary) !important; }
-#exportModal p.text-slate-400 { color: var(--text-secondary) !important; }
-#exportModal button.rounded-2xl { background: var(--bg-card) !important; border-color: var(--border-glass) !important; }
-#exportModal button.rounded-2xl:hover { background: var(--bg-input) !important; }
-#exportModal p.font-bold.text-darkblue { color: var(--text-primary) !important; }
-#exportModal p.text-xs.text-slate-400  { color: var(--text-muted) !important; }
-#exportModalClose            { background: var(--bg-card) !important; color: var(--text-muted) !important; }
-
-/* ── Mobile sticky bar (dark mode) ── */
-[data-theme="dark"] #mobileActionBar {
-    background: var(--bg-mobile-bar) !important;
-    border-color: var(--border-glass) !important;
-}
-[data-theme="dark"] #mobileActionBar #exportPdfBtnMobile {
-    background: var(--bg-mobile-export) !important;
-    border-color: var(--border-glass) !important;
-    color: var(--text-primary) !important;
-}
-[data-theme="dark"] #mobileActionBar #generateBtnMobile {
-    /* Keep the gradient — it's already dark-mode appropriate */
-    box-shadow: 0 4px 14px -3px rgba(14,165,233,0.20);
-}
-
-/* ── Scrollbars ── */
-.custom-scrollbar::-webkit-scrollbar-thumb       { background: var(--scrollbar-thumb); }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-hover); }
-
-/* ── Smooth transition when toggling ── */
-*,
-*::before,
-*::after {
+/* Smooth global transition when toggling */
+*, *::before, *::after {
     transition-property: background-color, border-color, color, box-shadow;
     transition-duration: 0.25s;
     transition-timing-function: ease;
 }
-/* But don't slow down animations that already have their own timing */
-.fade-in,
-.animate-spin,
-.animate-pulse,
-.schedule-block,
-.schedule-block:hover { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important; }
+/* Preserve existing animation timings */
+.fade-in, .animate-spin, .animate-pulse,
+.schedule-block, .schedule-block:hover,
+.dm-thumb { transition-duration: 0.3s !important; }

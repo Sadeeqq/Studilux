@@ -38,7 +38,7 @@
         }
     </script>
 </head>
-<body class="bg-ash text-darkblue h-screen overflow-hidden flex flex-col font-sans relative antialiased selection:bg-brand-500 selection:text-white">
+<body class="text-darkblue h-screen overflow-hidden flex flex-col font-sans relative antialiased selection:bg-brand-500 selection:text-white">
     
     <!-- Ambient Background Gradients -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -56,12 +56,9 @@
                 <div>
                     <h1 class="text-2xl font-bold tracking-tight text-darkblue">Studilux</h1>
                     <p class="text-xs text-brand-500 font-bold tracking-wide uppercase">StudyBuddy+</p>
-                    <!-- Dark mode toggle — sits just below the logo text -->
                     <button id="darkModeToggle" aria-label="Toggle dark mode"
-                        class="mt-1.5 flex items-center gap-1.5 group focus:outline-none">
-                        <!-- Track -->
+                        class="mt-1.5 flex items-center gap-1.5 focus:outline-none">
                         <div id="dmTrack" class="relative w-9 h-5 rounded-full transition-all duration-300 dm-track">
-                            <!-- Thumb -->
                             <div id="dmThumb" class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full shadow transition-all duration-300 dm-thumb"></div>
                         </div>
                         <span id="dmLabel" class="text-[0.6rem] font-bold uppercase tracking-widest dm-label">Light</span>
@@ -161,7 +158,7 @@
 </aside>
 
         <!-- Dynamic Output -->
-        <main class="flex-1 overflow-x-auto overflow-y-auto bg-transparent relative custom-scrollbar flex flex-col pb-8">
+        <main class="flex-1 overflow-x-auto overflow-y-auto relative custom-scrollbar flex flex-col pb-8">
             
             <!-- Error Banner -->
             <div id="errorBanner" class="hidden absolute top-6 left-1/2 transform -translate-x-1/2 bg-rose-100/90 backdrop-blur-md border border-rose-200 text-rose-700 px-8 py-3.5 rounded-full z-50 shadow-lg flex items-center max-w-xl w-full fade-in">
@@ -183,10 +180,10 @@
             <div id="exportArea" class="p-4 md:p-8 lg:p-12 flex-1 w-full flex flex-col items-center overflow-x-auto">
                 <h2 class="text-3xl font-bold text-darkblue mb-8 tracking-tight text-center">Studilux Reading Timetable</h2>
 <p class="text-[0.7rem] text-slate-500 font-bold mb-6 uppercase tracking-wider flex items-center"><i class="fa-solid fa-circle-info text-brand-500 mr-2 text-[0.8rem]"></i> Tip: Click any grid cell to toggle it as <span class="text-slate-800 underline decoration-slate-400 mx-1">Blocked (Busy Window)</span>, or drag study blocks to reschedule.</p>
-                <div class="bg-white/40 backdrop-blur-3xl rounded-3xl shadow-xl border border-glassborder flex overflow-hidden transition-all duration-500 w-full" style="height: max(300px, calc(var(--num-hours, 24) * 60px)); touch-action: pan-x pan-y;" id="calendarContainer">
+                <div class="backdrop-blur-3xl rounded-3xl shadow-xl border border-glassborder flex overflow-hidden transition-all duration-500 w-full" style="height: max(300px, calc(var(--num-hours, 24) * 60px)); touch-action: pan-x pan-y;" id="calendarContainer">
                     
                     <!-- Time Line -->
-                    <div class="w-20 border-r border-glassborder flex flex-col bg-white/60" id="timeColumn">
+                    <div class="w-20 border-r border-glassborder flex flex-col" id="timeColumn">
                         <!-- Filled by JS -->
                     </div>
 
