@@ -526,26 +526,23 @@ window.addEventListener('resize', () => {
     }, 150);
 }, { passive: true });
 
-// ── Dark mode ─────────────────────────────────────────────────────────────────
-(function initDarkMode() {
+// ── Theme selector (Light / Dark / Cafe Brown) ────────────────────────────────
+(function initTheme() {
     const html   = document.documentElement;
-    const toggle = document.getElementById('darkModeToggle');
-    const label  = document.getElementById('dmLabel');
+    const select = document.getElementById('themeSelect');
     const KEY    = 'studilux_theme';
 
     function applyTheme(theme) {
         html.setAttribute('data-theme', theme);
-        if (label) label.textContent = theme === 'dark' ? 'Dark' : 'Light';
+        if (select) select.value = theme;
         try { localStorage.setItem(KEY, theme); } catch (_) {}
     }
 
     const saved = (() => { try { return localStorage.getItem(KEY); } catch (_) { return null; } })();
-    applyTheme(saved === 'dark' ? 'dark' : 'light');
+    applyTheme(['light','dark','cafe'].includes(saved) ? saved : 'light');
 
-    if (toggle) {
-        toggle.addEventListener('click', () => {
-            applyTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-        });
+    if (select) {
+        select.addEventListener('change', () => applyTheme(select.value));
     }
 })();
 

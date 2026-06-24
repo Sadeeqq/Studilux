@@ -529,6 +529,46 @@
     --dm-thumb-x:      0px;
 }
 
+/* ── Cafe Brown tokens ── */
+[data-theme="cafe"] {
+    --bg-page:         #f5efe6;
+    --bg-header:       rgba(245,235,220,0.88);
+    --bg-sidebar:      rgba(240,228,210,0.80);
+    --bg-card:         rgba(255,248,238,0.80);
+    --bg-input:        rgba(255,252,245,0.90);
+    --bg-calendar:     rgba(255,248,238,0.70);
+    --bg-time-col:     rgba(245,235,220,0.85);
+    --bg-day-header:   rgba(240,228,210,0.90);
+    --bg-loading:      rgba(245,235,220,0.80);
+    --bg-modal:        rgba(255,248,238,0.97);
+    --bg-mobile-bar:   rgba(245,235,220,0.90);
+    --bg-mob-export:   rgba(240,228,210,0.75);
+
+    --border-glass:    rgba(180,140,100,0.25);
+    --border-grid:     rgba(160,120,80,0.10);
+    --border-slot:     rgba(160,120,80,0.08);
+
+    --text-primary:    #3b1f0a;
+    --text-secondary:  #7a5c3a;
+    --text-muted:      #b89878;
+    --text-time:       #8a6848;
+    --text-day-hdr:    #5a3318;
+
+    --grid-dot:        rgba(140,100,60,0.07);
+
+    --shadow-block:    0 4px 15px -3px rgba(100,60,20,0.12), inset 0 1px 0 rgba(255,245,230,0.70);
+    --shadow-hover:    0 12px 25px -5px rgba(100,60,20,0.22), inset 0 1px 0 rgba(255,245,230,0.90);
+
+    --blocked-bg:      rgba(180,150,120,0.18);
+    --blocked-border:  rgba(160,130,100,0.30);
+
+    --error-bg:        rgba(254,226,226,0.90);
+    --error-border:    #fecaca;
+    --error-text:      #b91c1c;
+
+    --dm-label:        #8a6040;
+}
+
 /* ── Dark tokens ── */
 [data-theme="dark"] {
     --bg-page:         #141414;
@@ -656,7 +696,35 @@ aside h2      { color: var(--text-secondary) !important; }
 [data-theme="dark"] .diff-4 { background-color:rgba(15,30,80,0.45)   !important; border-color:rgba(30,58,138,0.25)  !important; border-left-color:#162868 !important; color:#90aad0 !important; }
 [data-theme="dark"] .diff-5 { background-color:rgba(90,15,15,0.40)   !important; border-color:rgba(239,68,68,0.20)  !important; border-left-color:#701010 !important; color:#e07070 !important; }
 
-/* Blocked slots */
+/* Warm block colours in Cafe Brown mode */
+[data-theme="cafe"] .diff-1 { background-color:rgba(196,168,130,0.35) !important; border-color:rgba(180,140,90,0.35)  !important; border-left-color:#a07848 !important; color:#3b1f0a !important; }
+[data-theme="cafe"] .diff-2 { background-color:rgba(180,148,108,0.35) !important; border-color:rgba(160,120,70,0.35)  !important; border-left-color:#8a6030 !important; color:#3b1f0a !important; }
+[data-theme="cafe"] .diff-3 { background-color:rgba(160,120,80,0.35)  !important; border-color:rgba(140,100,55,0.35)  !important; border-left-color:#7a5020 !important; color:#fff8ee !important; }
+[data-theme="cafe"] .diff-4 { background-color:rgba(130,88,50,0.38)   !important; border-color:rgba(110,70,30,0.35)   !important; border-left-color:#6a3810 !important; color:#fff0d8 !important; }
+[data-theme="cafe"] .diff-5 { background-color:rgba(180,70,50,0.28)   !important; border-color:rgba(180,70,50,0.30)   !important; border-left-color:#a03820 !important; color:#a03820 !important; }
+
+/* ── Theme select dropdown ── */
+#themeSelect {
+    appearance: none;
+    -webkit-appearance: none;
+    background: var(--bg-card);
+    border: 1px solid var(--border-glass);
+    color: var(--dm-label);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0.25rem 1.4rem 0.25rem 0.55rem;
+    border-radius: 9999px;
+    cursor: pointer;
+    outline: none;
+    transition: background 0.2s, border-color 0.2s;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238a9ab8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.45rem center;
+}
+#themeSelect:hover { border-color: var(--text-muted); }
 .blocked-slot { background-color: var(--blocked-bg) !important;
                 border-color: var(--blocked-border) !important; }
 
@@ -687,12 +755,6 @@ aside h2      { color: var(--text-secondary) !important; }
                                        border-color: var(--border-glass) !important;
                                        color: var(--text-primary) !important; }
 
-/* Dark mode toggle */
-.dm-track  { background-color: var(--dm-track) !important; }
-.dm-thumb  { background-color: var(--dm-thumb) !important;
-             transform: translateX(var(--dm-thumb-x)) !important; }
-.dm-label  { color: var(--dm-label) !important; }
-
 /* Smooth global transition when toggling */
 *, *::before, *::after {
     transition-property: background-color, border-color, color, box-shadow;
@@ -701,5 +763,4 @@ aside h2      { color: var(--text-secondary) !important; }
 }
 /* Preserve existing animation timings */
 .fade-in, .animate-spin, .animate-pulse,
-.schedule-block, .schedule-block:hover,
-.dm-thumb { transition-duration: 0.3s !important; }
+.schedule-block, .schedule-block:hover { transition-duration: 0.3s !important; }
