@@ -849,6 +849,99 @@ aside h2      { color: var(--text-secondary) !important; }
                                        border-color: var(--border-glass) !important;
                                        color: var(--text-primary) !important; }
 
+/* ══════════════════════════════════════════════════════════════════════════════
+   CAFE BROWN — button, logo & accent overrides
+   The Tailwind gradient classes on #subjectForm button and #generateBtnMobile
+   are hardcoded blue; we override them here so they match the warm palette.
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* Studilux h1 + STUDYBUDDY+ subtitle */
+[data-theme="cafe"] header h1            { color: #3b1f0a !important; }
+[data-theme="cafe"] header p.text-brand-500,
+[data-theme="cafe"] header p             { color: #a0622a !important; }
+
+/* Logo icon bubble */
+[data-theme="cafe"] header .bg-gradient-to-br {
+    background: linear-gradient(135deg, #c47830, #7a3d10) !important;
+    box-shadow: 0 4px 14px rgba(140,70,20,0.30) !important;
+}
+
+/* "Add Subject" form button */
+[data-theme="cafe"] #subjectForm button[type="submit"] {
+    background: linear-gradient(to right, #c47830, #7a3d10) !important;
+    box-shadow: 0 4px 14px rgba(140,70,20,0.25) !important;
+}
+[data-theme="cafe"] #subjectForm button[type="submit"]:hover {
+    background: linear-gradient(to right, #d4884a, #8a4d20) !important;
+    box-shadow: 0 6px 18px rgba(140,70,20,0.35) !important;
+}
+
+/* Mobile sticky "Generate Timetable" button */
+[data-theme="cafe"] #mobileActionBar #generateBtnMobile {
+    background: linear-gradient(to right, #c47830, #7a3d10) !important;
+    box-shadow: 0 4px 14px rgba(140,70,20,0.30) !important;
+}
+
+/* Desktop "Generate Timetable" navbar button */
+[data-theme="cafe"] #generateBtn {
+    background: rgba(196,120,48,0.15) !important;
+    border-color: rgba(196,120,48,0.35) !important;
+    color: #7a3d10 !important;
+}
+[data-theme="cafe"] #generateBtn .text-brand-500 { color: #c47830 !important; }
+
+/* Peak hour selected state */
+[data-theme="cafe"] #peakHoursContainer button.border-amber-500 {
+    background: rgba(196,120,48,0.15) !important;
+    border-color: #c47830 !important;
+    color: #7a3d10 !important;
+}
+
+/* Diff level pill accent colours */
+[data-theme="cafe"] .diff-1 { border-left-color: #c47830 !important; }
+[data-theme="cafe"] .diff-2 { border-left-color: #a85a20 !important; }
+[data-theme="cafe"] .diff-3 { border-left-color: #8a4010 !important; }
+[data-theme="cafe"] .diff-4 { border-left-color: #6a2808 !important; }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   AQUA MARINE — button, logo & accent overrides
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* Studilux h1 + STUDYBUDDY+ subtitle */
+[data-theme="aqua"] header h1            { color: #6ee7b7 !important; }
+[data-theme="aqua"] header p.text-brand-500,
+[data-theme="aqua"] header p             { color: #34d399 !important; }
+
+/* Logo icon bubble */
+[data-theme="aqua"] header .bg-gradient-to-br {
+    background: linear-gradient(135deg, #10b981, #064e3b) !important;
+    box-shadow: 0 4px 14px rgba(16,185,129,0.35) !important;
+}
+
+/* "Add Subject" form button */
+[data-theme="aqua"] #subjectForm button[type="submit"] {
+    background: linear-gradient(to right, #10b981, #065f46) !important;
+    box-shadow: 0 4px 14px rgba(16,185,129,0.28) !important;
+}
+[data-theme="aqua"] #subjectForm button[type="submit"]:hover {
+    background: linear-gradient(to right, #34d399, #047857) !important;
+    box-shadow: 0 6px 18px rgba(16,185,129,0.38) !important;
+}
+
+/* Mobile sticky "Generate Timetable" button */
+[data-theme="aqua"] #mobileActionBar #generateBtnMobile {
+    background: linear-gradient(to right, #10b981, #065f46) !important;
+    box-shadow: 0 4px 14px rgba(16,185,129,0.32) !important;
+}
+
+/* Desktop "Generate Timetable" navbar button */
+[data-theme="aqua"] #generateBtn {
+    background: rgba(16,185,129,0.12) !important;
+    border-color: rgba(52,211,153,0.30) !important;
+    color: #6ee7b7 !important;
+}
+[data-theme="aqua"] #generateBtn .text-brand-500 { color: #34d399 !important; }
+
 /* Smooth global transition when toggling */
 *, *::before, *::after {
     transition-property: background-color, border-color, color, box-shadow;

@@ -268,22 +268,119 @@ exportPdfBtn.addEventListener('click', () => {
         return;
     }
 
-    const { jsPDF } = window.jspdf;
-    const pdf        = new jsPDF('l', 'mm', 'a4');
-    const PW         = pdf.internal.pageSize.getWidth();   // 297mm
-    const PH         = pdf.internal.pageSize.getHeight();  // 210mm
-    const MARGIN     = 12;
+    // ── Theme palette lookup ─────────────────────────────────────────────────
+    // Each theme defines: bg (page), gridBg (cell area), headerBg, headerText,
+    // titleText, timeText, gridLine, footerText, and per-diff block colours.
+    const theme = document.documentElement.getAttribute('data-theme') || 'light';
 
-    const DIFF_COLORS = {
-        1: { bg: [219, 234, 254], border: [56,  189, 248], text: [12, 74, 110]  },
-        2: { bg: [186, 230, 253], border: [14,  165, 233], text: [12, 74, 110]  },
-        3: { bg: [147, 197, 253], border: [2,   132, 199], text: [240,249,255]  },
-        4: { bg: [165, 180, 252], border: [30,  58,  138], text: [240,249,255]  },
-        5: { bg: [254, 202, 202], border: [239, 68,  68 ], text: [239, 68,  68] },
+    const THEME_PALETTES = {
+        light: {
+            bg:         [240, 244, 248],
+            gridBg:     [255, 255, 255],
+            headerBg:   [255, 255, 255],
+            headerBdr:  [220, 230, 245],
+            headerText: [30,  58,  138],
+            titleText:  [30,  58,  138],
+            timeText:   [100, 116, 139],
+            gridLine:   [210, 220, 235],
+            footerText: [148, 163, 184],
+            diff: {
+                1: { bg: [219,234,254], border: [56, 189,248], text: [12, 74,110]  },
+                2: { bg: [186,230,253], border: [14, 165,233], text: [12, 74,110]  },
+                3: { bg: [147,197,253], border: [2,  132,199], text: [240,249,255] },
+                4: { bg: [165,180,252], border: [30,  58,138], text: [240,249,255] },
+                5: { bg: [254,202,202], border: [239, 68, 68], text: [239, 68, 68] },
+            },
+        },
+        dark: {
+            bg:         [20,  20,  24 ],
+            gridBg:     [28,  28,  34 ],
+            headerBg:   [34,  34,  42 ],
+            headerBdr:  [255,255,255, 0.07],
+            headerText: [200, 210, 240],
+            titleText:  [200, 214, 240],
+            timeText:   [74,  96, 112 ],
+            gridLine:   [50,  55,  65 ],
+            footerText: [70,  85, 100 ],
+            diff: {
+                1: { bg: [20, 80,120], border: [56,189,248], text: [144,200,224] },
+                2: { bg: [10, 70,110], border: [14,165,233], text: [128,184,216] },
+                3: { bg: [5,  55, 95], border: [2, 132,199], text: [184,218,240] },
+                4: { bg: [15, 30, 80], border: [30, 58,138], text: [144,170,208] },
+                5: { bg: [90, 15, 15], border: [239,68, 68], text: [224,112,112] },
+            },
+        },
+        cafe: {
+            bg:         [245, 239, 230],
+            gridBg:     [255, 248, 238],
+            headerBg:   [240, 228, 210],
+            headerBdr:  [180, 140, 100],
+            headerText: [90,  51,  24 ],
+            titleText:  [59,  31,  10 ],
+            timeText:   [138, 104,  72],
+            gridLine:   [200, 165, 130],
+            footerText: [184, 152, 120],
+            diff: {
+                1: { bg: [230,205,170], border: [196,120, 48], text: [59, 31, 10] },
+                2: { bg: [220,188,148], border: [168, 90, 32], text: [59, 31, 10] },
+                3: { bg: [205,168,120], border: [138, 64, 16], text: [255,248,238] },
+                4: { bg: [185,140, 90], border: [106, 40,  8], text: [255,240,220] },
+                5: { bg: [220,140,120], border: [180, 60, 30], text: [140, 30, 10] },
+            },
+        },
+        neon: {
+            bg:         [26,  10,  46 ],
+            gridBg:     [38,  14,  62 ],
+            headerBg:   [48,  16,  72 ],
+            headerBdr:  [200, 80, 255 ],
+            headerText: [240, 168, 255],
+            titleText:  [240, 168, 255],
+            timeText:   [128,  64, 184],
+            gridLine:   [80,  30, 120 ],
+            footerText: [100,  48, 160],
+            diff: {
+                1: { bg: [100, 30,160], border: [192, 80,255], text: [240,168,255] },
+                2: { bg: [120, 20,180], border: [208, 60,255], text: [248,176,255] },
+                3: { bg: [140, 10,200], border: [224, 40,255], text: [255,208,255] },
+                4: { bg: [160,  0,200], border: [240,  0,255], text: [255,224,255] },
+                5: { bg: [200,  0,100], border: [255, 20,120], text: [255,128,184] },
+            },
+        },
+        aqua: {
+            bg:         [13,  43,  38 ],
+            gridBg:     [16,  48,  40 ],
+            headerBg:   [20,  58,  48 ],
+            headerBdr:  [52, 211, 153 ],
+            headerText: [110, 231, 183],
+            titleText:  [110, 231, 183],
+            timeText:   [42,  128,  96],
+            gridLine:   [28,  90,  66 ],
+            footerText: [40,  110,  80],
+            diff: {
+                1: { bg: [20,100, 72], border: [52,211,153], text: [110,231,183] },
+                2: { bg: [16,118, 82], border: [40,190,130], text: [134,239,202] },
+                3: { bg: [10,130, 88], border: [30,170,110], text: [167,243,208] },
+                4: { bg: [6, 100, 68], border: [20,150, 95], text: [200,248,228] },
+                5: { bg: [180, 60,40], border: [220, 80,50], text: [252,160,138] },
+            },
+        },
     };
 
+    const P = THEME_PALETTES[theme] || THEME_PALETTES.light;
+
+    const { jsPDF } = window.jspdf;
+
+    // ── Orientation: portrait for ≤4 days (taller blocks), landscape for 5–7 ──
     const activeDays = DAYS.filter(d => lastScheduleData[d]?.length > 0);
     if (!activeDays.length) { showError("No sessions to export."); return; }
+
+    const orientation = activeDays.length <= 4 ? 'p' : 'l';
+    const pdf  = new jsPDF(orientation, 'mm', 'a4');
+    const PW   = pdf.internal.pageSize.getWidth();
+    const PH   = pdf.internal.pageSize.getHeight();
+    const MARGIN      = 16;
+    const TIME_COL_W  = 20;   // wider → more room for HH:00 labels
+    const HEADER_H    = 14;   // taller day-name pills
 
     let minH = 24, maxH = 0;
     activeDays.forEach(d => lastScheduleData[d].forEach(e => {
@@ -292,39 +389,41 @@ exportPdfBtn.addEventListener('click', () => {
     }));
     const numHours = maxH - minH + 1;
 
-    const TIME_COL_W  = 14;
-    const usableW     = PW - MARGIN * 2 - TIME_COL_W;
-    const DAY_COL_W   = usableW / activeDays.length;
-    const HEADER_H    = 10;
-    const usableH     = PH - MARGIN * 2 - HEADER_H;
-    const ROW_H       = usableH / numHours;
-    const gridTop     = MARGIN + HEADER_H;
-    const gridLeft    = MARGIN + TIME_COL_W;
+    const usableW  = PW - MARGIN * 2 - TIME_COL_W;
+    const DAY_COL_W = usableW / activeDays.length;
+    const usableH  = PH - MARGIN * 2 - HEADER_H - 8; // 8mm title area
+    const ROW_H    = usableH / numHours;
+    const gridTop  = MARGIN + HEADER_H + 8;
+    const gridLeft = MARGIN + TIME_COL_W;
 
     // Background
-    pdf.setFillColor(240, 244, 248);
+    pdf.setFillColor(...P.bg);
     pdf.rect(0, 0, PW, PH, 'F');
+
+    // Grid cell background
+    pdf.setFillColor(...P.gridBg);
+    pdf.roundedRect(gridLeft, gridTop, usableW, usableH, 2, 2, 'F');
 
     // Title
     pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(13);
-    pdf.setTextColor(30, 58, 138);
-    pdf.text('Studilux Reading Timetable', PW / 2, MARGIN - 2, { align: 'center' });
+    pdf.setFontSize(18);
+    pdf.setTextColor(...P.titleText);
+    pdf.text('Studilux Reading Timetable', PW / 2, MARGIN + 4, { align: 'center' });
 
     // Day headers
-    pdf.setFontSize(7);
+    pdf.setFontSize(10);
     pdf.setFont('helvetica', 'bold');
     activeDays.forEach((day, i) => {
         const x = gridLeft + i * DAY_COL_W;
-        pdf.setFillColor(255, 255, 255);
-        pdf.setDrawColor(220, 230, 245);
-        pdf.roundedRect(x + 1, MARGIN, DAY_COL_W - 2, HEADER_H - 1, 1.5, 1.5, 'FD');
-        pdf.setTextColor(30, 58, 138);
-        pdf.text(day.substring(0, 3).toUpperCase(), x + DAY_COL_W / 2, MARGIN + 6.5, { align: 'center' });
+        pdf.setFillColor(...P.headerBg);
+        pdf.setDrawColor(...P.headerBdr);
+        pdf.roundedRect(x + 1, MARGIN + 8, DAY_COL_W - 2, HEADER_H - 1, 2, 2, 'FD');
+        pdf.setTextColor(...P.headerText);
+        pdf.text(day.substring(0, 3).toUpperCase(), x + DAY_COL_W / 2, MARGIN + 8 + 9, { align: 'center' });
     });
 
     // Vertical column dividers
-    pdf.setDrawColor(200, 215, 235);
+    pdf.setDrawColor(...P.gridLine);
     pdf.setLineWidth(0.2);
     activeDays.forEach((_, i) => {
         const x = gridLeft + i * DAY_COL_W;
@@ -334,11 +433,11 @@ exportPdfBtn.addEventListener('click', () => {
 
     // Time labels + horizontal hour lines
     pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(5.5);
-    pdf.setTextColor(100, 116, 139);
+    pdf.setFontSize(8);
+    pdf.setTextColor(...P.timeText);
     for (let h = 0; h <= numHours; h++) {
         const y = gridTop + h * ROW_H;
-        pdf.setDrawColor(210, 220, 235);
+        pdf.setDrawColor(...P.gridLine);
         pdf.setLineWidth(0.15);
         pdf.line(MARGIN + TIME_COL_W, y, MARGIN + TIME_COL_W + usableW, y);
         if (h < numHours) {
@@ -353,7 +452,7 @@ exportPdfBtn.addEventListener('click', () => {
         events.forEach(evt => {
             const subj   = subjects.find(s => s.name === evt.subject) || { difficulty: 1 };
             const diff   = Math.min(5, Math.max(1, subj.difficulty));
-            const colors = DIFF_COLORS[diff];
+            const colors = P.diff[diff];
             const x      = gridLeft + colIdx * DAY_COL_W + 1.5;
             const y      = gridTop + (evt.hour - minH) * ROW_H + 1;
             const bw     = DAY_COL_W - 3;
@@ -364,32 +463,33 @@ exportPdfBtn.addEventListener('click', () => {
             pdf.setLineWidth(0.4);
             pdf.roundedRect(x, y, bw, bh, 1.5, 1.5, 'FD');
 
+            // Accent left bar
             pdf.setFillColor(...colors.border);
             pdf.rect(x, y, 1.5, bh, 'F');
 
             pdf.setFont('helvetica', 'bold');
-            pdf.setFontSize(Math.min(6.5, bh > 6 ? 6.5 : bh * 0.55));
+            pdf.setFontSize(Math.min(9, bh > 8 ? 9 : bh * 0.65));
             pdf.setTextColor(...colors.text);
-            const maxChars  = Math.floor(bw / 2.1);
+            const maxChars  = Math.floor(bw / 1.8);
             const nameLabel = evt.subject.length > maxChars
                 ? evt.subject.substring(0, maxChars - 1) + '…'
                 : evt.subject;
-            pdf.text(nameLabel, x + 3.5, y + Math.min(bh * 0.45, 4.5));
+            pdf.text(nameLabel, x + 4, y + Math.min(bh * 0.42, 6));
 
-            if (bh > 7) {
+            if (bh > 10) {
                 pdf.setFont('helvetica', 'normal');
-                pdf.setFontSize(4.5);
+                pdf.setFontSize(7);
                 pdf.setTextColor(...colors.text);
                 const timeLabel = String(evt.hour).padStart(2,'0') + ':00–' + String(evt.hour + 1).padStart(2,'0') + ':00';
-                pdf.text(timeLabel, x + 3.5, y + bh * 0.72);
+                pdf.text(timeLabel, x + 4, y + bh * 0.72);
             }
         });
     });
 
     // Footer
     pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(5);
-    pdf.setTextColor(148, 163, 184);
+    pdf.setFontSize(7);
+    pdf.setTextColor(...P.footerText);
     const now = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
     pdf.text(`Generated by Studilux · ${now}`, PW / 2, PH - 4, { align: 'center' });
 
