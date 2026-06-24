@@ -241,9 +241,29 @@ subjectForm.addEventListener('submit', (e) => {
         renderSubjects();
         saveSubjects();
         subjectForm.reset();
+        updateAddBtn();
         document.getElementById('subjName').focus();
     }
 });
+
+// ── Add Subject button: disabled until name field has content ─────────────────
+const addSubjectBtn = document.getElementById('addSubjectBtn');
+
+function updateAddBtn() {
+    const hasName = document.getElementById('subjName').value.trim().length > 0;
+    if (hasName) {
+        addSubjectBtn.disabled = false;
+        addSubjectBtn.classList.remove('add-btn-inactive');
+        addSubjectBtn.classList.add('add-btn-active');
+    } else {
+        addSubjectBtn.disabled = true;
+        addSubjectBtn.classList.remove('add-btn-active');
+        addSubjectBtn.classList.add('add-btn-inactive');
+    }
+}
+
+document.getElementById('subjName').addEventListener('input', updateAddBtn);
+updateAddBtn(); // set correct state on page load
 
 // ══════════════════════════════════════════════════════════════════════════════
 // EXPORT SYSTEM — Clean Vector PDF Implementation

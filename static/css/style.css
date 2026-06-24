@@ -942,7 +942,77 @@ aside h2      { color: var(--text-secondary) !important; }
 }
 [data-theme="aqua"] #generateBtn .text-brand-500 { color: #34d399 !important; }
 
-/* Smooth global transition when toggling */
+/* ── Sidebar description text & info cards — theme tokens ── */
+aside p.text-slate-400          { color: var(--text-secondary) !important; }
+aside p.text-slate-400 strong   { color: var(--text-primary)   !important; }
+aside .text-brand-500           { color: var(--text-primary)   !important; }
+
+/* ── Add Subject button — inactive (no name typed) ── */
+.add-btn-inactive {
+    background: rgba(148, 163, 184, 0.15) !important;
+    border: 1.5px dashed rgba(148, 163, 184, 0.35) !important;
+    color: rgba(148, 163, 184, 0.6) !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+}
+.add-btn-inactive i { opacity: 0.5; }
+
+/* ── Add Subject button — active (name typed) per theme ── */
+[data-theme="light"] .add-btn-active,
+[data-theme="cafe"]  .add-btn-active { /* cafe overrides below */
+    background: linear-gradient(to right, #0ea5e9, #1e3a8a) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px -3px rgba(14, 165, 233, 0.35) !important;
+    border: none !important;
+    cursor: pointer !important;
+}
+[data-theme="light"] .add-btn-active:hover {
+    background: linear-gradient(to right, #38bdf8, #0284c7) !important;
+    box-shadow: 0 6px 18px -3px rgba(14, 165, 233, 0.45) !important;
+}
+
+[data-theme="dark"] .add-btn-active {
+    background: linear-gradient(to right, #0ea5e9, #1e3a8a) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px -3px rgba(14, 165, 233, 0.40) !important;
+    border: none !important;
+    cursor: pointer !important;
+}
+
+[data-theme="cafe"] .add-btn-active {
+    background: linear-gradient(to right, #c47830, #7a3d10) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(140, 70, 20, 0.30) !important;
+    border: none !important;
+    cursor: pointer !important;
+}
+[data-theme="cafe"] .add-btn-active:hover {
+    background: linear-gradient(to right, #d4884a, #8a4d20) !important;
+}
+
+[data-theme="neon"] .add-btn-active {
+    background: linear-gradient(to right, #c040ff, #7000c0) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(180, 0, 255, 0.38) !important;
+    border: none !important;
+    cursor: pointer !important;
+}
+[data-theme="neon"] .add-btn-active:hover {
+    background: linear-gradient(to right, #d060ff, #8800d8) !important;
+}
+
+[data-theme="aqua"] .add-btn-active {
+    background: linear-gradient(to right, #10b981, #065f46) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35) !important;
+    border: none !important;
+    cursor: pointer !important;
+}
+[data-theme="aqua"] .add-btn-active:hover {
+    background: linear-gradient(to right, #34d399, #047857) !important;
+}
+
+/* ── Smooth global transition when toggling */
 *, *::before, *::after {
     transition-property: background-color, border-color, color, box-shadow;
     transition-duration: 0.25s;
