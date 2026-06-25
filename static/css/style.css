@@ -527,6 +527,10 @@
     --dm-thumb:        #94a3b8;
     --dm-label:        #64748b;
     --dm-thumb-x:      0px;
+
+    --peak-active-bg:     rgba(245, 158, 11, 0.15);
+    --peak-active-border: #f59e0b;
+    --peak-active-text:   #92400e;
 }
 
 /* ── Cafe Brown tokens ── */
@@ -567,6 +571,10 @@
     --error-text:      #b91c1c;
 
     --dm-label:        #8a6040;
+
+    --peak-active-bg:     rgba(196, 120, 48, 0.18);
+    --peak-active-border: #c47830;
+    --peak-active-text:   #7a3d10;
 }
 
 /* ── Aqua Marine tokens ── */
@@ -607,6 +615,10 @@
     --error-text:      #ff7080;
 
     --dm-label:        #3db88a;
+
+    --peak-active-bg:     rgba(52, 211, 153, 0.15);
+    --peak-active-border: #34d399;
+    --peak-active-text:   #6ee7b7;
 }
 
 /* ── Neon Purple tokens ── */
@@ -647,6 +659,10 @@
     --error-text:      #ff7090;
 
     --dm-label:        #c060e8;
+
+    --peak-active-bg:     rgba(200, 80, 255, 0.15);
+    --peak-active-border: #c040ff;
+    --peak-active-text:   #f0a8ff;
 }
 
 /* ── Dark tokens ── */
@@ -690,6 +706,10 @@
     --dm-thumb:        #ffffff;
     --dm-label:        #60a0c0;
     --dm-thumb-x:      16px;
+
+    --peak-active-bg:     rgba(251, 191, 36, 0.12);
+    --peak-active-border: #fbbf24;
+    --peak-active-text:   #fcd34d;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
@@ -1011,6 +1031,29 @@ aside .text-brand-500           { color: var(--text-primary)   !important; }
 [data-theme="aqua"] .add-btn-active:hover {
     background: linear-gradient(to right, #34d399, #047857) !important;
 }
+
+/* ── theme-card: replaces hardcoded bg-white/50 on sidebar cards ── */
+.theme-card {
+    background: var(--bg-card) !important;
+}
+
+/* ── Peak hour buttons ── */
+.peak-btn-active {
+    background-color: var(--peak-active-bg) !important;
+    border: 2px solid var(--peak-active-border) !important;
+    color: var(--peak-active-text) !important;
+}
+.peak-btn-inactive {
+    background-color: var(--bg-card) !important;
+    border: 1px solid var(--border-glass) !important;
+    color: var(--text-secondary) !important;
+}
+.peak-btn-inactive:hover {
+    background-color: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+}
+.peak-icon-active  { color: var(--peak-active-border) !important; }
+.peak-icon-inactive { color: var(--text-muted) !important; }
 
 /* ── Smooth global transition when toggling */
 *, *::before, *::after {

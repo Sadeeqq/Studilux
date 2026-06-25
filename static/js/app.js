@@ -67,10 +67,10 @@ function renderPeakHoursSelector() {
         const isPeak = peakHours.has(h);
 
         btn.className = isPeak
-            ? 'py-2 px-1 rounded-xl bg-amber-500/15 border-2 border-amber-500 text-amber-700 shadow-sm transition duration-200 focus:outline-none flex items-center justify-center'
-            : 'py-2 px-1 rounded-xl bg-white/40 border border-glassborder text-slate-500 hover:bg-white/60 hover:text-slate-700 transition duration-200 focus:outline-none flex items-center justify-center';
+            ? 'peak-btn peak-btn-active py-2 px-1 rounded-xl shadow-sm transition duration-200 focus:outline-none flex items-center justify-center'
+            : 'peak-btn peak-btn-inactive py-2 px-1 rounded-xl transition duration-200 focus:outline-none flex items-center justify-center';
 
-        btn.innerHTML = `<i class="fa-solid fa-bolt text-[0.65rem] ${isPeak ? 'text-amber-500' : 'text-slate-300'} mr-1"></i> ${h.toString().padStart(2, '0')}:00`;
+        btn.innerHTML = `<i class="fa-solid fa-bolt text-[0.65rem] ${isPeak ? 'peak-icon-active' : 'peak-icon-inactive'} mr-1"></i> ${h.toString().padStart(2, '0')}:00`;
 
         btn.addEventListener('click', () => {
             if (peakHours.has(h)) { peakHours.delete(h); } else { peakHours.add(h); }
