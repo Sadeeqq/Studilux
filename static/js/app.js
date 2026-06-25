@@ -230,20 +230,34 @@ function showError(msg) {
 }
 
 // ── Event Listeners ───────────────────────────────────────────────────────────
+// ── Subject name: allow only letters, numbers and spaces ─────────────────────
+document.getElementById('subjName').addEventListener('input', function () {
+    const clean = this.value.replace(/[^a-zA-Z0-9 ]/g, '');
+    if (this.value !== clean) this.value = clean;
+    updateAddBtn();
+});
+
 subjectForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    const name = document.getElementById('subjName').value.trim();
+    const name       = document.getElementById('subjName').value.trim();
     const difficulty = parseInt(document.getElementById('subjDiff').value);
-    const hours = parseInt(document.getElementById('subjHours').value);
+    const hours      = parseInt(document.getElementById('subjHours').value);
 
-    if (name) {
-        subjects.push({ name, difficulty, hours });
-        renderSubjects();
-        saveSubjects();
-        subjectForm.reset();
-        updateAddBtn();
-        document.getElementById('subjName').focus();
+    if (!name) return;
+
+    // Duplicate check — case-insensitive
+    const isDuplicate = subjects.some(s => s.name.toLowerCase() === name.toLowerCase());
+    if (isDuplicate) {
+        showError(`"${name}" has already been added.`);
+        return;
     }
+
+    subjects.push({ name, difficulty, hours });
+    renderSubjects();
+    saveSubjects();
+    subjectForm.reset();
+    updateAddBtn();
+    document.getElementById('subjName').focus();
 });
 
 // ── Add Subject button: disabled until name field has content ─────────────────
@@ -262,7 +276,6 @@ function updateAddBtn() {
     }
 }
 
-document.getElementById('subjName').addEventListener('input', updateAddBtn);
 updateAddBtn(); // set correct state on page load
 
 // ══════════════════════════════════════════════════════════════════════════════

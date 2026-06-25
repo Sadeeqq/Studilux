@@ -531,6 +531,8 @@
     --peak-active-bg:     rgba(245, 158, 11, 0.15);
     --peak-active-border: #f59e0b;
     --peak-active-text:   #92400e;
+
+    --checkbox-accent:    #0ea5e9;
 }
 
 /* ── Cafe Brown tokens ── */
@@ -575,6 +577,8 @@
     --peak-active-bg:     rgba(196, 120, 48, 0.18);
     --peak-active-border: #c47830;
     --peak-active-text:   #7a3d10;
+
+    --checkbox-accent:    #c47830;
 }
 
 /* ── Aqua Marine tokens ── */
@@ -619,6 +623,8 @@
     --peak-active-bg:     rgba(52, 211, 153, 0.15);
     --peak-active-border: #34d399;
     --peak-active-text:   #6ee7b7;
+
+    --checkbox-accent:    #10b981;
 }
 
 /* ── Neon Purple tokens ── */
@@ -663,6 +669,8 @@
     --peak-active-bg:     rgba(200, 80, 255, 0.15);
     --peak-active-border: #c040ff;
     --peak-active-text:   #f0a8ff;
+
+    --checkbox-accent:    #c040ff;
 }
 
 /* ── Dark tokens ── */
@@ -710,6 +718,8 @@
     --peak-active-bg:     rgba(251, 191, 36, 0.12);
     --peak-active-border: #fbbf24;
     --peak-active-text:   #fcd34d;
+
+    --checkbox-accent:    #38bdf8;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
@@ -1071,6 +1081,12 @@ aside .text-brand-500           { color: var(--text-primary)   !important; }
 #mobileActionBar #historyBtnMobile .fa-clock-rotate-left {
     color: var(--text-secondary);
     font-size: 0.85rem;
+}
+
+/* ── Theme-aware day checkboxes ── */
+.day-checkbox {
+    accent-color: var(--checkbox-accent) !important;
+    border-color: var(--border-glass) !important;
 }
 
 /* ── theme-card: replaces hardcoded bg-white/50 on sidebar cards ── */
