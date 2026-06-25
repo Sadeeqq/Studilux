@@ -66,6 +66,9 @@
                 </div>
             </div>
             <div class="flex space-x-3">
+                <button id="historyBtn" class="bg-white/40 hover:bg-white/60 border border-glassborder text-darkblue px-5 py-2.5 rounded-full font-bold shadow-sm transition-all duration-300 backdrop-blur-md hover:-translate-y-1 group">
+                    <i class="fa-solid fa-clock-rotate-left text-brand-500 mr-2"></i> History
+                </button>
                 <button id="exportPdfBtn" class="bg-white/40 hover:bg-white/60 border border-glassborder text-darkblue px-5 py-2.5 rounded-full font-bold shadow-sm transition-all duration-300 backdrop-blur-md hover:-translate-y-1 group">
                     <i class="fa-solid fa-file-pdf text-rose-500 mr-2"></i> Export PDF
                 </button>
@@ -329,11 +332,12 @@
         </div>
     </div>
 
-    <!-- Mobile-only sticky action bar ─────────────────────────────────────────
-         Visible only on ≤767px. Mirrors the navbar Export PDF and Generate
-         Timetable buttons so they're always reachable without scrolling.
-         The navbar copies are hidden on mobile via CSS (see style.css).       -->
+    <!-- Mobile-only sticky action bar -->
     <div id="mobileActionBar">
+        <button id="historyBtnMobile" style="flex:0.8">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <span>History</span>
+        </button>
         <button id="exportPdfBtnMobile">
             <i class="fa-solid fa-file-pdf"></i>
             <span>Export PDF</span>
@@ -342,6 +346,31 @@
             <i class="fa-solid fa-wand-magic-sparkles"></i>
             <span>Generate Timetable</span>
         </button>
+    </div>
+
+    <!-- History Drawer ──────────────────────────────────────────────────────────
+         Slides in from the right. Shows up to 15 past timetables.             -->
+    <div id="historyOverlay" class="hidden fixed inset-0 z-[90] bg-darkblue/30 backdrop-blur-sm" ></div>
+    <div id="historyDrawer" class="history-drawer fixed top-0 right-0 h-full w-full sm:w-[420px] z-[95] flex flex-col shadow-2xl translate-x-full transition-transform duration-300">
+        <!-- Drawer header -->
+        <div class="flex items-center justify-between px-6 py-5 border-b border-glassborder shrink-0">
+            <div>
+                <h2 class="text-base font-bold tracking-tight" style="color:var(--text-primary)">Timetable History</h2>
+                <p class="text-[0.65rem] font-bold uppercase tracking-widest mt-0.5" style="color:var(--text-muted)">Last 15 generated timetables</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="historyClearAll" class="text-[0.6rem] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border transition" style="color:var(--error-text);border-color:var(--error-border)">
+                    Clear All
+                </button>
+                <button id="historyClose" class="w-8 h-8 rounded-full flex items-center justify-center transition" style="background:var(--bg-card);color:var(--text-muted)">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Drawer body -->
+        <div id="historyList" class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-3">
+            <!-- Entries injected by JS -->
+        </div>
     </div>
 
     <!-- Scripts -->

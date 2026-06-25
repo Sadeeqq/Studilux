@@ -1032,6 +1032,47 @@ aside .text-brand-500           { color: var(--text-primary)   !important; }
     background: linear-gradient(to right, #34d399, #047857) !important;
 }
 
+/* ── History Drawer ── */
+#historyDrawer {
+    background: var(--bg-sidebar) !important;
+    border-left: 1px solid var(--border-glass) !important;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+}
+
+.history-card:hover {
+    border-color: var(--peak-active-border) !important;
+    box-shadow: 0 4px 16px -4px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+}
+
+/* Mobile: history button in sticky bar */
+#mobileActionBar #historyBtnMobile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    background: var(--bg-mob-export) !important;
+    border: 1px solid var(--border-glass) !important;
+    color: var(--text-primary) !important;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    padding: 0.7rem 0.75rem;
+    border-radius: 9999px;
+    box-shadow: 0 1px 4px rgba(30,58,138,0.08);
+    transition: background 0.2s, transform 0.15s;
+    cursor: pointer;
+    white-space: nowrap;
+}
+#mobileActionBar #historyBtnMobile:active {
+    transform: scale(0.97);
+}
+#mobileActionBar #historyBtnMobile .fa-clock-rotate-left {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
 /* ── theme-card: replaces hardcoded bg-white/50 on sidebar cards ── */
 .theme-card {
     background: var(--bg-card) !important;

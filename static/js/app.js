@@ -559,6 +559,7 @@ generateBtn.addEventListener('click', async () => {
         if (result.success) {
             lastScheduleData = result.schedule;
             renderSchedule(result.schedule);
+            saveToHistory(result.schedule);
         } else {
             showError(result.error || "Constraint resolution failed. Try adjusting rules.");
         }
@@ -678,4 +679,159 @@ if (exportPdfBtnMobile) {
 }
 if (generateBtnMobile) {
     generateBtnMobile.addEventListener('click', () => generateBtn.click());
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// HISTORY SYSTEM
+// Stores up to 15 timetable snapshots in localStorage.
+// Each entry: { id, timestamp, subjects, schedule }
+// ══════════════════════════════════════════════════════════════════════════════
+
+const HISTORY_KEY = 'studilux_history';
+const HISTORY_MAX = 15;
+
+function loadHistory() {
+    try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }
+    catch (_) { return []; }
+}
+
+function saveHistory(history) {
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch (_) {}
+}
+
+function saveToHistory(schedule) {
+    const history = loadHistory();
+    const entry = {
+        id:        Date.now(),
+        timestamp: new Date().toISOString(),
+        subjects:  JSON.parse(JSON.stringify(subjects)),   // snapshot
+        schedule:  JSON.parse(JSON.stringify(schedule)),
+    };
+    history.unshift(entry);                                // newest first
+    if (history.length > HISTORY_MAX) history.splice(HISTORY_MAX);
+    saveHistory(history);
+}
+
+function formatHistoryDate(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+        + ' · ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+}
+
+function renderHistoryList() {
+    const list    = document.getElementById('historyList');
+    const history = loadHistory();
+
+    if (!history.length) {
+        list.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-full py-16 text-center">
+                <i class="fa-solid fa-clock-rotate-left text-3xl mb-4" style="color:var(--text-muted)"></i>
+                <p class="text-sm font-bold" style="color:var(--text-secondary)">No history yet</p>
+                <p class="text-xs mt-1" style="color:var(--text-muted)">Generated timetables will appear here</p>
+            </div>`;
+        return;
+    }
+
+    list.innerHTML = '';
+    history.forEach((entry, idx) => {
+        const totalSessions = Object.values(entry.schedule)
+            .reduce((sum, arr) => sum + (arr?.length || 0), 0);
+        const activeDays = Object.values(entry.schedule)
+            .filter(arr => arr?.length > 0).length;
+        const subjectNames = entry.subjects.map(s => s.name).join(', ');
+
+        const card = document.createElement('div');
+        card.className = 'history-card rounded-2xl border p-4 transition-all duration-200 cursor-default';
+        card.style.cssText = 'background:var(--bg-card);border-color:var(--border-glass)';
+
+        card.innerHTML = `
+            <div class="flex items-start justify-between gap-2 mb-3">
+                <div>
+                    <p class="text-[0.6rem] font-bold uppercase tracking-widest mb-1" style="color:var(--text-muted)">
+                        <i class="fa-solid fa-clock mr-1"></i>${formatHistoryDate(entry.timestamp)}
+                    </p>
+                    <p class="text-xs font-bold truncate max-w-[220px]" style="color:var(--text-primary)" title="${subjectNames}">
+                        ${subjectNames || 'No subjects'}
+                    </p>
+                </div>
+                <button class="history-delete shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition hover:scale-110" 
+                        style="background:var(--error-bg);color:var(--error-text)" data-id="${entry.id}" title="Delete">
+                    <i class="fa-solid fa-trash-can text-[0.6rem] pointer-events-none"></i>
+                </button>
+            </div>
+            <div class="flex items-center gap-3 mb-3">
+                <span class="text-[0.6rem] font-bold px-2.5 py-1 rounded-full" style="background:var(--bg-input);color:var(--text-secondary)">
+                    <i class="fa-solid fa-calendar-days mr-1"></i>${activeDays} day${activeDays !== 1 ? 's' : ''}
+                </span>
+                <span class="text-[0.6rem] font-bold px-2.5 py-1 rounded-full" style="background:var(--bg-input);color:var(--text-secondary)">
+                    <i class="fa-solid fa-book-open mr-1"></i>${totalSessions} session${totalSessions !== 1 ? 's' : ''}
+                </span>
+                <span class="text-[0.6rem] font-bold px-2.5 py-1 rounded-full" style="background:var(--bg-input);color:var(--text-secondary)">
+                    <i class="fa-solid fa-layer-group mr-1"></i>${entry.subjects.length} subject${entry.subjects.length !== 1 ? 's' : ''}
+                </span>
+            </div>
+            <button class="history-restore w-full py-2 rounded-xl text-xs font-bold transition-all active:scale-95" 
+                    style="background:var(--peak-active-bg);color:var(--peak-active-text);border:1px solid var(--peak-active-border)" 
+                    data-idx="${idx}">
+                <i class="fa-solid fa-rotate-left mr-1.5"></i>Restore This Timetable
+            </button>
+        `;
+        list.appendChild(card);
+    });
+
+    // Restore handler
+    list.querySelectorAll('.history-restore').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const entry = loadHistory()[parseInt(btn.dataset.idx)];
+            if (!entry) return;
+            // Restore subjects + schedule
+            subjects = entry.subjects;
+            saveSubjects();
+            renderSubjects();
+            lastScheduleData = entry.schedule;
+            renderSchedule(entry.schedule);
+            closeHistoryDrawer();
+        });
+    });
+
+    // Delete handler
+    list.querySelectorAll('.history-delete').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const history = loadHistory().filter(e => e.id !== parseInt(btn.dataset.id));
+            saveHistory(history);
+            renderHistoryList();
+        });
+    });
+}
+
+// ── Drawer open / close ───────────────────────────────────────────────────────
+const historyDrawer  = document.getElementById('historyDrawer');
+const historyOverlay = document.getElementById('historyOverlay');
+
+function openHistoryDrawer() {
+    renderHistoryList();
+    historyDrawer.classList.remove('translate-x-full');
+    historyOverlay.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeHistoryDrawer() {
+    historyDrawer.classList.add('translate-x-full');
+    historyOverlay.classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+document.getElementById('historyBtn')?.addEventListener('click', openHistoryDrawer);
+document.getElementById('historyClose')?.addEventListener('click', closeHistoryDrawer);
+historyOverlay?.addEventListener('click', closeHistoryDrawer);
+
+document.getElementById('historyClearAll')?.addEventListener('click', () => {
+    saveHistory([]);
+    renderHistoryList();
+});
+
+// Mobile history button
+const historyBtnMobile = document.getElementById('historyBtnMobile');
+if (historyBtnMobile) {
+    historyBtnMobile.addEventListener('click', openHistoryDrawer);
 }
